@@ -3,9 +3,8 @@
 Case files
 ==========
 
-A nekRS simulation is referred to as a "case," which utilises a number of files
-which are described in this page. An overview of these are presented in the the 
-image below .
+NekRS simulation requires a number of case definition files which are described in this page.
+An overview of these are presented in the image below .
 
 .. _fig:case_overview:
 
@@ -16,43 +15,30 @@ image below .
 
 There are a minimum of three files required to run a case:
 
-* Parameter file, with ``.par`` extension. This sets parameters used by the case
-  and can be modified between runs.
+* Parameter file, with ``.par`` extension. This sets parameters used by the case and can be modified between runs.
 * Mesh file, with ``.re2`` extension. This file defines the geometry of the case.
-* User-defined host file, with ``.udf`` extension. This is used to set specific
-  equations of the case, initial/boundary conditions, data outputs and other user 
-  definable behaviour.
+* User-defined host file, with ``.udf`` extension. This is used to set specific equations of the case, initial/boundary conditions, data outputs and other user definable behaviour.
 
 With one optional file
 
-* Trigger file, with ``.upd`` extension. This file allows modifications to the 
-  simulation during execution.
+* Trigger file, with ``.upd`` extension. This file allows modifications to the simulation during execution.
 
-The "case name" is then the common prefix applied to these files - for instance,
-a complete input description with a case name of "eddy" would be given by the files
-``eddy.par``, ``eddy.re2``, ``eddy.udf``, and ``eddy.upd``.
+The case name is the common prefix applied to these files - for instance, a complete input description with a case name of "eddy" would be given by the files ``eddy.par``, ``eddy.re2``, ``eddy.udf``, and ``eddy.upd``.
 The only restrictions on the case name are:
 
 * It must be used as the prefix on all simulation files, and
 * Typical restrictions for naming files for your operating system
 
-The following sections describe the structure and syntax for each of these files
-for a general case. Because the :term:`Nek5000` code is a predecessor to
-nekRS, some aspects of the current nekRS input file design are selected to enable faster translation of
-Nek5000 input files into nekRS input files. Because these
-Nek5000-based approaches require proficiency in Fortran, the inclusion of several additional input
-files, and in some cases, careful usage of fixed-format text inputs, all
-Nek5000-based methods for case setup are referred to here as "legacy" approaches.
-All new users are encouraged to adopt the nekRS-based problem setup.
+The following sections describe the structure and syntax for each of these files for a general case.
 
 .. _parameter_file:
 
 Parameter File (.par)
 ---------------------
 
-Most information about the problem setup is defined in the parameter file. This file is organized
-in a number of sections, each with a number of keys. Values are assigned to these keys in order to
-control the simulation settings.
+Most information about the problem setup is defined in the parameter file.
+This file is organized in a number of sections, each with a number of keys.
+Values are assigned to these keys in order to control the simulation settings.
 
 The general structure of the ``.par`` file is as
 follows, where ``FOO`` and ``BAR`` are both section names, with a number of (key, value) pairs.
@@ -69,49 +55,45 @@ follows, where ``FOO`` and ``BAR`` are both section names, with a number of (key
 
 The valid sections for setting up a nekRS simulation are:
 
-* ``BOOMERAMG``: settings for the (optional) :term:`AMG` solver
-* ``GENERAL``: generic settings for the simulation
-* ``MESH``: settings for the mesh
 * ``OCCA``: backend :term:`OCCA` device settings
-* ``PRESSURE``: settings for the pressure solution
+* ``GENERAL``: generic settings for the simulation
 * ``PROBLEMTYPE``: settings for the governing equations
-* ``SCALARXX``: settings for the ``XX``-th scalar
+* ``MESH``: mesh related settings
+* ``GEOM``: ?
+* ``VELOCITY``: settings for the velocity solver
+* ``PRESSURE``: settings for the pressure solver
+* ``BOOMERAMG``: settings for the (optional) :term:`AMG` solver
+* ``SCALAR``: default scalar settings
+* ``SCALAR FOO``: settings for the ``FOO`` scalar
 * ``TEMPERATURE``: settings for the temperature solution
-* ``VELOCITY``: settings for the velocity solution
 * ``CASEDATA``: custom settings
 
 Each of the keys and value types are described below. 
 
-**TODO** Description of keys in table
+.. _sec:generalpars:
 
-.. code-block:: cpp
+General Parameters
+""""""""""""""""""
 
-  std::string user_occa_backend;
-  options.getArgs("THREAD MODEL", user_occa_backend);
-
-In other words, if you have ``backend = CUDA`` in the ``.par`` file, then
-``user_occa_backend`` would be set to ``CUDA`` in the above code.
-
-Generally, most ``.par`` settings are not saved to a data structure, so throughout the code
-base, whenever information from the ``.par`` file is needed, it is simply
-extracted on-the-fly via the ``options`` structure.
-
-nekRS performs validation of the par file. Invalid sections, invalid keys or values,
-invalid value combinations, missing values etc. will terminate the NekRS run with a
-clear error message. Deprecated attributes will be highlighted. 
-
-nekRS uses just-in-time compilation to allow the incorporation of user-defined functions
-into program execution. These functions can be written to allow ultimate flexibility on
-the part of the user to affect the simulation, such as to define custom fluid properties,
-specify spatially-dependent boundary and initial conditions, and apply post-processing
-operations. Some of the parameters in the sections can be overridden through the use of
-user-defined functions - see, for example, the ``viscosity`` key in
-the ``VELOCITY`` section. This parameter is used to set a constant viscosity, whereas
-for variable-property simulations, a user-defined function will override the ``viscosity``
-input parameter. A full description of these user-defined functions on the host and
-device are described in Sections :ref:`udf_functions`. So, the description of valid (key, value)
-pairs here does not necessarily imply that these parameters reflect the full capabilities
-of nekRS.
++-----------------------------+-------------------------------+-------------------------------------------------------------------------+
+| Key                         | Value(s)                      | Description                                                             |
++=============================+===============================+=========================================================================+
+| ``verbose``                 | true/false [D]                | toggles output to logfile                                               |
++-----------------------------+-------------------------------+-------------------------------------------------------------------------+
+| ``polynomialOrder``         | <int>                         | polynomial order of solution                                            |
++-----------------------------+-------------------------------+-------------------------------------------------------------------------+
+| ``dealiasing``              | true[D] / false               | toggler over-integration/dealiasing of convective term                  |
++-----------------------------+-------------------------------+-------------------------------------------------------------------------+
+| ``cubaturePolynomialOrder`` | <int>                         | polynomial order of dealiasing                                          |
+|                             | 3/2*(polynomialOrder+1)-1 [D] |                                                                         |
++-----------------------------+-------------------------------+-------------------------------------------------------------------------+
+| ``startFrom``               | <string>                      | Absolute relative path of the field file to restart the simulation from |
+|                             | + time=<float>                | reset to specified time                                                 |
+|                             | + x                           | read mesh coordinates                                                   |
+|                             | + u                           | read velocity                                                           |
+|                             | + s or s00 s01 s02 ...        | read all or list of scalars                                             |
+|                             | + int                         | interpolate                                                             |
++-----------------------------+-------------------------------+-------------------------------------------------------------------------+
 
 .. literalinclude:: ../../parHelp.txt
    :language: none

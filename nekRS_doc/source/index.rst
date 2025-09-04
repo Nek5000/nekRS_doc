@@ -33,7 +33,7 @@ Table of Contents
    :maxdepth: 2
 
    quickstart
-   user_guide/_user_guide
+   problem_setup/_problem_setup
    tutorials/_tutorials
    developer_guide/_developer_guide
    theory
