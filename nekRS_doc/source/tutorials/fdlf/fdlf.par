@@ -1,0 +1,35 @@
+userSections = CASEDATA
+
+[GENERAL]
+polynomialOrder = 5
+stopAt = endTime
+endTime = 1.0
+dt = 1e-04
+timeStepper = tombo2
+
+checkpointControl = simulationTime 
+checkpointInterval = 0.2
+
+scalars = temperature
+
+[PROBLEMTYPE]
+equation = navierStokes
+
+[FLUID PRESSURE]
+residualTol = 1e-04
+
+[FLUID VELOCITY]
+residualTol = 1e-06
+rho = 1.2
+viscosity = 0.00002 
+
+[SCALAR TEMPERATURE]
+residualTol = 1e-06
+transportCoeff = 1200.0
+diffusionCoeff = 0.025 
+
+[CASEDATA]
+UMEAN = 0.5
+HEATFLUX = 300.0
+TINLET = 10
+HEIGHT = 0.01

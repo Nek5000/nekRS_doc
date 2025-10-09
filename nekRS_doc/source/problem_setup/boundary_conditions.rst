@@ -46,6 +46,8 @@ All available boundary conditions are summarised in the command line help functi
        [SCALAR TEMPERATURE]
        boundaryTypeMap = 10, 20, 30, 389, 231
 
+.. _bcdata:
+
 User Defined Value/Gradient
 """""""""""""""""""""""""""
 

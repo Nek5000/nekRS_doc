@@ -298,26 +298,3 @@ of the repository.
 | ``CMAKE_INSTALL_PREFIX`` | Set install directory                                            | ``$HOME/.local/nekrs`` |
 +--------------------------+------------------------------------------------------------------+------------------------+
 
-.. _scripts:
-
-Building the Nek5000 Tool Scripts
----------------------------------
-
-NekRS itself does not have functionality for creating or adapting meshes and
-relies instead on the scripts available with :term:`Nek5000` such as ``genbox``, 
-``exo2nek`` and ``gmsh2nek``. To build these scripts, you will need to separately
-clone the Nek5000 repository, and then navigate to the ``tools`` directory and 
-run the makefile to compile the relevant scripts.
-
-For example, if you want to make the ``genbox`` tool available.
-
-.. code-block:: bash
-
-  git clone https://github.com/Nek5000/Nek5000.git
-  cd Nek5000/tools
-  ./maketools genbox
-
-This should create binary executables in the ``Nek5000/bin`` directory. 
-You may want to add this to your path in order to quickly access those scripts. 
-There is additional information about these scripts in the nek5000 docs 
-`here <https://nek5000.github.io/NekDoc/tools.html>`_.
