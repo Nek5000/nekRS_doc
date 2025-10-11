@@ -167,8 +167,8 @@ void computeUtau(nrs_t *nrs, double time, int tstep)
 
 void UDF_ExecuteStep(double time, int tstep)
 {
-  if (nrs->lastStep) {
-    computeUtau(nrs, time, tstep);
-    extractLine(nrs, time);
-  }
+  //if (nrs->lastStep) {
+  //  computeUtau(nrs, time, tstep);
+  //  extractLine(nrs, time);
+  //}
 }

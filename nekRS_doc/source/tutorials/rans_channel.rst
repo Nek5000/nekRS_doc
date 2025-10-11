@@ -147,6 +147,19 @@ The boundary conditions for :math:`k` and :math:`\tau` scalar fields on the chan
 ``isField()`` function helps identify the scalar field using the string identifier specified in ``.par`` file.
 Note that the boundary condition on the wall for both :math:`k` and :math:`\tau` transport equations are zero.
 
+Execute Step Routine
+^^^^^^^^^^^^^^^^^^^^
+
+The final essential routine in ``.udf`` is the ``UDF_ExecuteStep`` routine:
+
+.. literalinclude:: ktauTutorial/channel.udf
+   :language: c++
+   :lines: 168-174
+
+Any case specific post-processing can be performed in this routine. 
+``nrs->lastStep`` identifies the last step in the simulation and it can be used to perform any post-processing operations before the simulation terminates.
+For this case, two optional post-processing routines are provided, explained in the following sections.
+
 ..............................
 Compilation and Running
 ..............................
@@ -188,4 +201,51 @@ For reference, the results obtained from the :math:`k-\tau` and :math:`k-\tau SS
    :figclass: align-center
 
    Normalized TKE from different RANS models.
-   
+
+...................................
+Optional: Post-processing Routines
+...................................
+
+For the convenience of the user, post-processing routines are provided in the above downloadable ``.udf`` file.
+The routines are specific to this case, but may be adopted for other cases with suitable modifications.
+
+Data Extraction Along a Line
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The routine shown below extracts x-component of velocity and :math:`k` profile along 200 data points distributed along a vertical line from :math:`(7,-1,0.5)` to :math:`(7,0,0.5)`.
+*NekRS* offers inbuilt interpolation routines to find the value of any field at a specified point in the domain.
+``interpolator->eval`` call evaluates the value of velocity and :math:`k` at the points stored in arrays ``xp, yp, zp``.
+The extracted data is written into a file named ``profile.dat``.
+
+More details on the usage of interpolation routines can be found :ref:`here <postprocessing>`.
+
+.. literalinclude:: ktauTutorial/channel.udf
+   :language: c++
+   :lines: 14-72
+
+Compute Friction Velocity
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following routine computes the surface averaged friction velocity evaluated at all walls in the domain.
+The local friction velocity at any boundary :term:`GLL` point is defined as,
+
+.. math::
+
+   u_{\tau} = \sqrt{\frac{\| \vec{\tau_w} - \left(\vec{\tau_w} \cdot {\vec{n}} \right) {\vec{n}} \|}{\rho}} \\
+   \vec{\tau_w} = \left. \mu [\nabla \vec{v} + \nabla \vec{v}^T] \cdot {\vec{n}} \right|_w
+
+where :math:`\vec{n}` is the local normal vector at the boundary.
+The average friction velocity is computed as,
+
+.. math::
+
+  \overline{u_\tau} = \frac{\int_{\Gamma} u_\tau d \Gamma}{\int_\Gamma d_\Gamma} 
+
+where :math:`\Gamma` represents all wall boundaries.
+The routine is as follows.
+It also computes the relative error in computed mean friction velocity compared to the DNS value reported by [Lee2015]_.
+For further details on the *NekRS* routine used below, see :ref:`Postprocessing <postprocessing>`.
+
+.. literalinclude:: ktauTutorial/channel.udf
+   :language: c++
+   :lines: 136-166
