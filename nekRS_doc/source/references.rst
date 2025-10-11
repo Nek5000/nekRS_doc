@@ -17,6 +17,8 @@ References
 
 .. [Launder] Launder, B.E. and Spalding, D.B. "The Numerical Computation of Turbulent Flows," *Computer Methods in Applied Mechanics and Engineering* **3** 269-289 (1974)
 
+.. [Lee2015] Lee, M. and Moser, R.D. "Direct numerical simulation of turbulent channel flow up to :math:`Re_\tau \approx 5200," *Journal of fluid mechanics*, 774, pp.395-415 (2015). 
+
 .. [Lund1998] Lund, Thomas S., Xiaohua Wu, and Kyle D. Squires. "Generation of turbulent inflow data for spatially-developing boundary layer simulations." *Journal of computational physics 140.2* (1998): 233-258.
 
 .. [Persson] Persson, P.-O. and Peraire, J. "Sub-Cell Shock Capturing for Discontinuous Galerkin Methods", *44th AIAA Aerospace Sciences Meeting and Exhibit* (2006)

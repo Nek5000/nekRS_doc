@@ -4,177 +4,178 @@
 RANS Channel
 ------------
 
-This tutorial describes the essential setup details for a wall-resolved RANS simulation, illustrated through a 3D channel case. 
-The :math:`k-\tau` RANS model is employed for this tutorial, which is the recommended RANS model in *nekRS*. 
-For more information see :ref:`here <intro_ktau>`. 
+This tutorial describes the essential setup details for a wall-resolved RANS simulation, illustrated through a turbulent channel flow case. 
+The :math:`k-\tau` and :math:`k-\tau SST` RANS models are employed for this tutorial.
+More information on the :math:`k-\tau` model can be found :ref:`here <rans_models>`. 
 
 ..........................
 Before You Begin
 ..........................
 
-It is highly recommended that new users familiarize themselves with the basic *nekRS* simulation
-setup files and procedures outlined in the :ref:`fdlf` and :ref:`perhill` tutorials before proceeding.
+It is highly recommended that new users familiarize themselves with the basic *NekRS* simulation :ref:`setup files <case>` and procedures outlined in the :ref:`fdlf` tutorial.
 
 ..............................
 Mesh and Boundary Conditions
 ..............................
  
-The mesh is generated with ``genbox`` using the following input file
+The mesh is generated with ``genbox`` utility using the following input file
 
-.. literalinclude:: ktauTutorial/input.box
+.. literalinclude:: ktauTutorial/channel.box
    :language: none 
    
 It creates an infinite 3D half-channel of non-dimensional width :math:`1`. 
-The streamwise (:math:`x`) direction has 5  elements with periodic (``P``) boundary conditions.
-The wall-normal (:math:`y`) direction has 12  geometrically spaced elements with a symmetry (``SYM``) boundary condition specified at the bottom face and a wall (``W``) boundary on the top face. 
-The spanwise (:math:`z`) direction has 4 elements with periodic (``P``) boundary conditions.
-The elements expand from the bottom of the domain to the top with a ratio of :math:`0.35`.
-
-.. In addition to velocity and temperature, RANS simulation requires two additional fields for the turbulent scalars, in this cases turbulent kinetic energy, :math:`k`, and specific dissipation period, :math:`\tau`. The boundary conditions for these scalars are assigned in the :ref:`.par`.
-
-.. Note::
-  Boundary conditions for the turbulent scalars are specified in the :ref:`.udf` file.
+The streamwise (:math:`x`) direction has 5 elements with periodic (``P``) boundary conditions.
+The wall-normal (:math:`y`) direction has 12 elements with a symmetry (``SYM``) boundary condition specified at the top face and a wall (``W``) boundary on the bottom face. 
+Corresponding boundary conditions for the :math:`k` and :math:`\tau` transport equations are insulated (``I``) at the symmetry boundary and Dirichlet (``t``) type (equal to zero) at the wall.
+The spanwise (:math:`z`) direction has 3 elements with periodic (``P``) boundary conditions.
+The mesh is further modified in the ``.udf`` file to refine it near the wall to resolve boundary layers, as explained in following sections. 
 
 ..............................
 Control Parameters (.par file)
 ..............................
 
-Details of the structure of the parameter file can be found :ref:`here <case_files_par>`. 
-For RANS simulations it is critical to include two additional scalars which correspond to the :math:`k` and 
-:math:`\tau` fields respectively. 
-Here, they are included as the ``[SCALAR01]`` and ``[SCALAR02]`` cards.
-In addition, it is essential to also include the ``[PROBLEMTYPE]`` card and enable ``variableViscosity``.
-
-For this particular tutorial, the simulation is :ref:`non-dimensionalized <intro_ns_nondim>` and flow properties are ``density=1.0`` and ``viscosity=-43500``. 
-It is strongly recommended to run RANS simulations in non-dimensional form. 
-By assigning a negative value to the viscosity, *nekRS* will treat it as a Reynolds number.
-This setup corresponds to :math:`Re = 43,500`, which is well above the critical Reynolds number for a channel.
-``density`` and ``diffusivity``  for ``SCALAR01`` and ``SCALAR02`` should be assigned identical values as ``density`` and ``viscosity`` for velocity field for consistency.
+Details of the structure of the parameter file can be found :ref:`here <parameter_file>`. 
+The parameter file for this case is as follows,
 
 .. literalinclude:: ktauTutorial/channel.par
    :language: ini 
-   :emphasize-lines: 33-46
 
-The Temperature field is also  solved in this tutorial, but can be turned off  by uncommenting  the ``Solver = None`` line on the ``.par`` file.
+For RANS simulations it is critical to include two additional scalars which correspond to the :math:`k` and :math:`\tau` fields respectively. 
+This is done using the ``scalars`` key in ``[GENERAL]`` section by the string identifiers ``"k"`` and ``"tau"`` as shown above.
+In addition, it is essential to also include the ``[PROBLEMTYPE]`` card and specify the ``equation`` key as ``navierStokes+variableViscosity``.
+This ensures that a spatially varying diffusion field can be used to include eddy viscosity in the RANS momentum equation, as discussed :ref:`here <rans_models>`.
 
-..............................
-User Routines (.usr file)
-..............................
+For this particular tutorial, the simulation is :ref:`non-dimensionalized <nondimensional_eqs>` and flow properties are ``rho=1.0`` and ``viscosity=1/43500``. 
+The properties are assigned in ``.par`` file under the ``[FLUID VELOCITY]`` section as shown above.
+``[SCALAR K]`` and ``[SCALAR TAU]`` sections must also be included in the ``.par`` file.
 
-This section describes the essential code snippets required in the ``.usr`` file for RANS simulations.
-Other details of all the subroutines can be found :ref:`here <case_files_usr>`. 
+.. warning::
 
-Foremost, it is essential to include the following header at the beginning of the ``.usr`` file.
+   For RANS cases, no transport properties must be assigned under the ``[SCALAR K]`` and ``[SCALAR TAU]`` sections.
+   These are assigned internally by *NekRS*. 
+   If any properties are assigned under these sections, the solver with throw an informative error and exit.
 
-.. literalinclude:: rans/wallResolved/chan_WR.usr
-   :language: fortran
-   :lines: 2
-      
-Files in the above relative locations in the *nekRS* repo load the essential RANS subroutines.
+It is strongly recommended to run RANS simulations in non-dimensional form. 
+This setup corresponds to :math:`Re = 43,500`, which is well above the critical Reynolds number for a channel. 
+The specified non-dimensional bulk velocity for the case is :math:`U_b=1`.
+*NekRS* offers an inbuilt mechanism to maintain and control a specified control rate in periodic domains.
+This is assigned through the ``constFlowRate`` key in ``[GENERAL]`` section, as shown above.
+The key takes two parameters, viz., ``meanVelocity`` which is assigned the value of bulk velocity and ``direction`` takes the direction of streamwise velocity component.
+The case corresponds to one of the DNS simulation performed by Lee and Moser [Lee2015]_ for turbulent channel flow.
 
-.. _rans_init:
+Further, in this example a user section is included to specify the RANS model through the ``.par`` file in ``CASEDATA``.
+Note that two models are included in the example, ``KTAU`` and ``KTAUSST``. 
+The user can conveniently choose either model by assigning the value to ``MODEL`` key, as shown above.
+This is parsed in the ``.udf`` as explained in following section.
 
-RANS initialization is done through the ``rans_init`` subroutine call from ``usrdat2``. 
-The required code snippet is shown below.
+............................................
+User-defined Host Functions File (.udf file)
+............................................
 
-.. literalinclude:: rans/wallResolved/chan_WR.usr
-   :language: fortran
-   :lines: 162-198
-   
-The ``rans_init`` subroutine sets up the necessary solver variables to use RANS models. 
-This includes loading the model coefficients, setting up the character boundary condition (``cbc``) array for the turbulent scalars, and calculating the regularization [Tombo2025]_ for the :math:`k-\omega` models.
-The ``ifld_tke`` and ``ifld_tau`` variables specify the field index location of the transport variables of the two-equation RANS model. 
-The specific RANS model used is identified by the ``m_id`` variable. 
-All available RANS models are annotated in the above code. 
-The recommended :math:`k-\tau` model is invoked with ``m_id=4``.
-Selecting ``ifcoeffs=.false.`` sets the standard RANS coefficients outlined in [Wilcox2008]_. 
-Advanced users have the option of specifying their own coefficients which have to populated in the ``coeffs`` array, with ``ifcoeffs=.true.``. 
-The final parameter to be aware of is the wall distance function code ``w_id``. 
-The recommended value for it is ``w_id=2`` which provides a smoother distance function, populated in the ``wd`` array. 
-A cheaper option is available through ``w_id=1`` which provides "taxicab" distance and can search across periodic boundaries. 
-The user also has the option of specifying their own wall distance array by setting ``w_id=0`` which will require ``wd`` array to
-be populated with user computed wall distance before the ``rans_init`` call. 
+All RANS models in *NekRS* are available as plugins. 
+Generic details on RANS setup can be found in the :ref:`setup guide here <ktau_model>`.
 
-Diffusion coefficients for all fields in RANS simulation runs must be modified to include eddy viscosity.
-This is done by the following inclusions in the ``uservp`` subroutine
+To get started, include the RANS header at the top of the ``.udf`` file,
 
-.. literalinclude:: rans/wallResolved/chan_WR.usr
-   :language: fortran
-   :lines: 5-39
+.. literalinclude:: ktauTutorial/channel.udf
+   :language: c++
+   :lines: 1
+
+The required internal arrays and data structures for RANS models are initialized in the ``UDF_Setup`` routine.
+For this case the ``UDF_Setup`` setup is as follows,
+
+.. literalinclude:: ktauTutorial/channel.udf
+   :language: c++
+   :lines: 93-132
 	
-As above, eddy viscosity, ``mu_t``, is added to the momentum diffusion coefficient and :math:`k` and :math:`\tau` diffusion coefficients are modified as described by Eq. :eq:`ktau` in the :ref:`RANS theory section<intro_ktau>`. 
+Several operations are performed in the code snippet above.
 
-.. Note:: 
-  The transport and diffusion coefficients (``utrans`` and ``udiff``) for the RANS scalars are set with the :ref:`field coefficient array <tab:cpfld>` vaules (``cpfld``) for field 1, velocity. This is done to ensure consistency in the problem setup.
+Diffusion and Source terms
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Source terms in the :math:`k-\tau` transport equations, Eq. :eq:`ktau`, are added with the following inputs in the ``userq`` subroutine
+``nrs->userProperties`` and ``nrs->userSource`` are internal pointer variables which must be assigned user defined routines for specifying spatially varying transport properties and source terms, respectively.
+``uservp`` and ``userq`` are the corresponding routines which must be specified in ``.udf`` file, as shown below,
 
-.. literalinclude:: rans/wallResolved/chan_WR.usr
-   :language: fortran
-   :lines: 61-88
-	
-Implicit source terms contributions are specified to the ``avol`` variable, while remaining terms are 
-in the ``qvol`` variable. 
+.. literalinclude:: ktauTutorial/channel.udf
+   :language: c++
+   :lines: 72-80
 
-For the wall-resolved :math:`k-\tau` RANS model, the wall boundary conditions for :math:`k` and :math:`\tau` are both zero. 
-These are set in ``userbc`` as
+*NekRS* provides convenient routines, available in the namespace ``RANSktau``, for spatially varying diffusion and source terms, as shown above.
+Details on the diffusion and source terms can be found in :ref:`RANS theory <rans_models>`.
 
-.. literalinclude:: rans/wallResolved/chan_WR.usr
-   :language: fortran
-   :lines: 90-119
-   :emphasize-lines: 21
+Mesh Modification
+^^^^^^^^^^^^^^^^^
 
-The velocity boundary condition is checked in ``cb1`` for a wall on the highlighted line.
-For this periodic case, this is not strictly necessary. 
-However, for any inlet/outlet case it is needed to distinguish between the Dirichlet BC values for :math:`k` and :math:`\tau` on the wall versus an inlet, where ``cb1`` would have a value of ``v``.
-	
-Initial conditions are specified in the ``useric`` routine. 
-For RANS simulations, positive non-zero initial values for :math:`k` and :math:`\tau` are recommended. 
-The following is used for the channel simulation,
+Further, the ``UDF_Setup`` routine contains code to modify mesh y-coordinates for this case, in order to have fine boundary layers near the wall.
+``mesh->xyzHost()`` call is used to fetch the pointers to the existing x, y and z coordinate arrays on the host.
+Note that these variables are `std::vector``, dynamic container arrays.
+Subsequently, the for loop goes through all :term:`GLL` points in the mesh and modifies the y-coordinate, based on a hyperbolic tangent profile.
+After modifying the coordinates on the host, the arrays must also be copied to the device arrays, ``mesh->o_y``, using the ``copyFrom`` call.
 
-.. literalinclude:: rans/wallResolved/chan_WR.usr
-   :language: fortran
-   :lines: 121-143
-	
+Initial Conditions
+^^^^^^^^^^^^^^^^^^
+
+Next essential operation that must be included in ``.udf`` file is initialization of velocity, :math:`k` and :math:`\tau` fields.
+In this example, the x-component of velocity is initialized to a uniform value of 1, :math:`k` to 0.01 and :math:`\tau` to 0.1.
+
+.. note::
+
+  The :math:`k` and :math:`\tau` fields can be initialized to any reasonable positive value. 
+  For non-dimensional runs, 0.01 and 0.1 can be used as initial values. 
+  It is not recommended to initial these fields to zero, to avoid division by zero of some source terms.
+
+RANS Setup
+^^^^^^^^^^
+
+The final essential operation that must be included in ``UDF_Setup`` is the call to ``RANSktau::setup`` routine.
+This function requires one essential parameter, which is the index of the :math:`k` scalar field, ``nrs->scalar->nameToIndex.find("k")->second``.
+The second parameter is optional and specifies the RANS model name.
+If a second parameter is not passed, *NekRS* defaults to the standard :math:`k-\tau` RANS model.
+Note that for this case the model type is specified in ``.par`` file in ``[CASEDATA]`` section and read in ``UDF_Setup`` by extracting using the ``platform->par->extract`` function, as shown.
+
+See the :ref:`RANS guide <ktau_model>` for all RANS models available in *NekRS* and how to specify them.
+
+Boundary Conditions
+^^^^^^^^^^^^^^^^^^^
+
+The boundary conditions for :math:`k` and :math:`\tau` scalar fields on the channel wall are specified in the :ref:`OKL block <okl_block>` in the ``udfDirichlet`` device function as follows,
+
+.. literalinclude:: ktauTutorial/channel.udf
+   :language: c++
+   :lines: 3-11
+
+``isField()`` function helps identify the scalar field using the string identifier specified in ``.par`` file.
+Note that the boundary condition on the wall for both :math:`k` and :math:`\tau` transport equations are zero.
+
 ..............................
-SIZE file
-..............................
-
-The ``SIZE`` file can be copied from the available template included at the ``nekRS/core/SIZE.template`` and changing the basic parameters as necessary for this case.
-The user needs to ensure that the auxiliary fields specified in the SIZE file is at minimum ``ldimt=3`` for RANS simulations. 
-This includes the reserved field for temperature and the two additional fields for the turbulent scalars.
-In order to use the stress formulation, additional memory must be allocated by setting, ``lx1m=lx1``
-These two changes are highlighted below.
-Other details on the contents of the ``SIZE`` file can be found :ref:`here<case_files_SIZE>`.
-
-.. literalinclude:: rans/wallResolved/SIZE
-   :language: fortran
-   :lines: 11-40
-   :emphasize-lines: 10,24
-
-..............................
-Compilation
+Compilation and Running
 ..............................
 
 All required case files for RANS wall-resolved channel simulation can be downloaded using the links below:
 
- * :download:`chan_WR.usr <rans/wallResolved/chan_WR.usr>`
- * :download:`chan_WR.par <rans/wallResolved/chan_WR.par>`
- * :download:`chan_WR.re2 <rans/wallResolved/chan_WR.re2>`
- * :download:`chan_WR.ma2 <rans/wallResolved/chan_WR.ma2>`
- * :download:`SIZE <rans/wallResolved/SIZE>`
+ * :download:`channel.re2 <ktauTutorial/channel.re2>`
+ * :download:`channel.par <ktauTutorial/channel.par>`
+ * :download:`channel.udf <ktauTutorial/channel.udf>`
+
+If for some reason you encountered an insurmountable error and were unable to generate any of the required files, you may use the provided links to download them.
+Now you can run the case.
+
+.. code-block:: console
+
+   $ nrsbmpi channel 4
+
+The above command will launch an MPI jobs on your local machine using 4 ranks.
+The output will be redirected to ``logfile``.
  
 ..............................
 Results
 ..............................
 
-For reference, the results obtained from the :math:`k-\tau` RANS wall-resolved simulation are shown below and
-compared with results from low-Re :math:`k-\tau` (``m_id=5``), regularized :math:`k-\omega` (``m_id=0``) and low-Re regularized 
-:math:`k-\omega` (``m_id=1``) models.
+For reference, the results obtained from the :math:`k-\tau` and :math:`k-\tau SST` RANS wall-resolved models are shown below:
 
 .. _fig:streamwise_vel:
 
-.. figure:: rans/U1.png
+.. figure:: ktauTutorial/u.png
    :align: center
    :figclass: align-center
 
@@ -182,12 +183,9 @@ compared with results from low-Re :math:`k-\tau` (``m_id=5``), regularized :math
    
 .. _fig:chan_tke:
 
-.. figure:: rans/k1.png
+.. figure:: ktauTutorial/k.png
    :align: center
    :figclass: align-center
 
    Normalized TKE from different RANS models.
    
-RANS models may be simply switched by using the appropriate ``m_id`` in ``usrdat2``. 
-The low-Re versions of the model should be employed only for capturing the near wall TKE peak. 
-It may require additional resolution in the near-wall region and has only minimal impact on the velocity profile.

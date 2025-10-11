@@ -294,8 +294,6 @@ The output will be redirected to ``logfile``.
 Post-processing the results
 ___________________________
 
-.. TODO tidy how to get visnek
-
 Once execution is completed your directory should now contain 5 checkpoint files that look like this:
 
 .. code-block:: none
