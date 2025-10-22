@@ -11,7 +11,7 @@ Available Types
 
 All available boundary conditions are summarised in the command line help function for nekRS (``nekrs --help par``) and below.
 
-.. literalinclude:: ../../parHelp.txt
+.. literalinclude:: ../_includes/parHelp.txt
    :language: none
    :lines: 1-3, 154-182
 

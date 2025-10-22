@@ -3,4 +3,5 @@
 Quickstart
 ==========
 
-.. mdinclude:: ../../README.md
+.. mdinclude:: _includes/README.md
+   

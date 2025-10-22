@@ -3,13 +3,9 @@ References
 
 .. .. rubric:: References
 
-.. [Basse] Basse, N.T. "Turbulence Intensity and the Friction Factor for Smooth- and Rough-Wall Pipe Flows,"
-    *Fluids* **2** (2017)
+.. [Basse] Basse, N.T. "Turbulence Intensity and the Friction Factor for Smooth- and Rough-Wall Pipe Flows," *Fluids* **2** (2017)
 
-.. [Kalitzin] Kalitzin, G., Gould, A.R.B, and Benton, J.J.
-    "Application of Two-Equation Turbulence Models in Aircraft Design,"
-    *Proceedings of the American Institute of Aeronautics and Astronautics*
-    (1996)
+.. [Kalitzin] Kalitzin, G., Gould, A.R.B, and Benton, J.J. "Application of Two-Equation Turbulence Models in Aircraft Design," *Proceedings of the American Institute of Aeronautics and Astronautics* (1996)
 
 .. [Kok2000] Kok, J.C. and Spekreijse, S.P. "Efficient and Accurate Implementation of the :math:`k`-:math:`\omega` Turbulence Model in the NLR Multi-Block Navier-Stokes System," *European Congress on Computational Methods in Applied Sciences and Engineering* (2000)
 
@@ -17,7 +13,7 @@ References
 
 .. [Launder] Launder, B.E. and Spalding, D.B. "The Numerical Computation of Turbulent Flows," *Computer Methods in Applied Mechanics and Engineering* **3** 269-289 (1974)
 
-.. [Lee2015] Lee, M. and Moser, R.D. "Direct numerical simulation of turbulent channel flow up to :math:`Re_\tau \approx 5200," *Journal of fluid mechanics*, 774, pp.395-415 (2015). 
+.. [Lee2015] Lee, M. and Moser, R.D. "Direct numerical simulation of turbulent channel flow up to :math:`Re_\tau \approx 5200`," *Journal of fluid mechanics*, 774, pp.395-415 (2015). 
 
 .. [Lund1998] Lund, Thomas S., Xiaohua Wu, and Kyle D. Squires. "Generation of turbulent inflow data for spatially-developing boundary layer simulations." *Journal of computational physics 140.2* (1998): 233-258.
 

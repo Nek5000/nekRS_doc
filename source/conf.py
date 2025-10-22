@@ -25,6 +25,7 @@ from datetime import date
 import subprocess
 import re
 import shutil
+import urllib.request
 
 # -- General configuration ------------------------------------------------
 
@@ -233,10 +234,32 @@ def build_doxygen(app):
         check=True,
     )
 
+def fetch_remote_file(url: str, local_path: str):
+    os.makedirs(os.path.dirname(local_path), exist_ok=True)
+    try:
+        print(f"Fetching remote file: {url}")
+        urllib.request.urlretrieve(url, local_path)
+    except Exception as e:
+        print(f"Warning: could not fetch {url}: {e}")
+
+def fetch_includes(app):
+    files_to_fetch = {
+        "https://raw.githubusercontent.com/Nek5000/nekRS/refs/heads/next/README.md":
+        os.path.join(app.srcdir,"_includes","README.md"),
+        "https://raw.githubusercontent.com/Nek5000/nekRS/refs/heads/next/doc/parHelp.txt":
+        os.path.join(app.srcdir,"_includes","parHelp.txt"),
+        "https://raw.githubusercontent.com/Nek5000/nekRS/refs/heads/next/CONTRIBUTING.md":
+        os.path.join(app.srcdir,"_includes","CONTRIBUTING.md"),
+    }
+
+    for url, local_path in files_to_fetch.items():
+        fetch_remote_file(url, local_path)
 
 def setup(app):
     skipDoxygen = os.getenv("SKIPDOXYGEN")
     if skipDoxygen is None or skipDoxygen==0:
         app.connect("builder-inited", build_doxygen)
+
+    app.connect("builder-inited",fetch_includes)
 
     pass

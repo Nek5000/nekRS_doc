@@ -95,7 +95,7 @@ General Parameters
 |                             | + int                         | interpolate                                                             |
 +-----------------------------+-------------------------------+-------------------------------------------------------------------------+
 
-.. literalinclude:: ../../parHelp.txt
+.. literalinclude:: ../_includes/parHelp.txt
    :language: none
 
 Mesh File (.re2)
@@ -268,7 +268,3 @@ Trigger Files (.upd)
 
 Allows modifications to the simulation during execution. Can be edited and then
 notify of changes through sending a signal MPI rank 0.
-
-.. rubric:: Footnotes
-
-.. [#f1] While the heading for ``Mesh File (.re2)`` seems to suggest that the contents refer only to the ``.re2`` format, the actual text description still points to the legacy ``.rea`` format.

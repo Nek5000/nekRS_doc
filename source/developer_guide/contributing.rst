@@ -3,7 +3,6 @@
 Contributing
 ============
 
-This page contains guidelines and tips for those wanting to contribute to the
-code of nekRS.
+This page contains guidelines and tips for those wanting to contribute to the code of nekRS.
 
-.. mdinclude:: ../../README.md
+.. mdinclude:: ../_includes/CONTRIBUTING.md
