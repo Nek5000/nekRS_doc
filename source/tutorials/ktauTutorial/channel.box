@@ -1,0 +1,12 @@
+-3                     spatial dimension  (will create box.re2)
+3                      number of fields
+#=======================================================================
+#
+Box
+-5  -12  -3                     nelx,nely,nelz for Box
+0 8 1.                          x0,x1,gain  (rescaled in usrdat)
+-1 0 1.                          y0,y1,gain  (rescaled in usrdat)
+0 1 1.                          z0,z1,gain
+P  ,P  ,W  ,SYM,P  ,P           Velocity BCs
+P  ,P  ,t  ,I  ,P  ,P           k-equation BCs
+P  ,P  ,t  ,I  ,P  ,P           tau-equation BCs

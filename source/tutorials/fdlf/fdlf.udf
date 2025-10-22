@@ -1,0 +1,69 @@
+static dfloat umean;
+static dfloat heatflux;
+static dfloat tinlet;
+static dfloat height;
+
+#ifdef __okl__
+
+void udfDirichlet(bcData *bc)
+{
+  if (isField("fluid velocity")) {
+    bc->uxFluid = p_umean * 3./2. * (1.0 - 4.0 * pow(bc->y / p_height, 2.0));
+    bc->uyFluid = 0.0;
+    bc->uzFluid = 0.0;
+  } else if (isField("scalar temperature")) {
+    const dfloat term = p_hflux * p_height / (2.0 * bc->diffCoeff);
+    const dfloat rheight = bc->y / p_height;
+    const dfloat rheight2 = rheight * rheight;
+    const dfloat rheight4 = rheight2 * rheight2;
+    bc->sScalar = term * (3.0 * rheight2 - 2.0 * rheight4 - 39./280.) + p_tinlet;
+  }
+}
+
+void udfNeumann(bcData *bc)
+{
+  if (isField("scalar temperature")) {
+    bc->fluxScalar = p_hflux;
+  }
+}
+
+#endif
+
+void UDF_LoadKernels(deviceKernelProperties& kernelInfo)
+{
+  kernelInfo.define("p_umean") = umean;
+  kernelInfo.define("p_hflux") = heatflux;
+  kernelInfo.define("p_tinlet") = tinlet;
+  kernelInfo.define("p_height") = height;
+}
+
+void UDF_Setup0(MPI_Comm comm, setupAide &options)
+{
+  platform->par->extract("casedata", "umean", umean);
+  platform->par->extract("casedata", "heatflux", heatflux);
+  platform->par->extract("casedata", "tinlet", tinlet);
+  platform->par->extract("casedata", "height", height);
+}
+
+void UDF_Setup()
+{
+  auto mesh = nrs->meshV;
+
+  std::vector<dfloat> U(mesh->dim * nrs->fluid->fieldOffset, 0.0);
+  std::vector<dfloat> temp(mesh->Nlocal, 0.0);
+
+  if (platform->options.getArgs("RESTART FILE NAME").empty()) {
+    for(int n = 0; n < mesh->Nlocal; n++) {
+      U[n + 0 * nrs->fluid->fieldOffset] = umean;
+      U[n + 1 * nrs->fluid->fieldOffset] = 0;
+      U[n + 2 * nrs->fluid->fieldOffset] = 0;
+      temp[n] = tinlet;
+    }
+    nrs->fluid->o_U.copyFrom(U.data(), U.size());
+    nrs->scalar->o_solution("temperature").copyFrom(temp.data(), temp.size()); 
+  }
+}
+
+void UDF_ExecuteStep(double time, int tstep)
+{
+}
