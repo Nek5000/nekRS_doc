@@ -1,29 +1,23 @@
+.. literalinclude:: _includes/README.md
+   :language: md
+   :lines: 2-7
+
 .. _nekrs:
 
 The nekRS Computational Fluid Dynamics Code
 ===================================================
 
-nekRS is a computational fluid dynamics code developed at :term:`ANL`, :term:`UIUC`, and :term:`PSU`.
-nekRS aims to leverage the present trend in :term:`GPU`-based :term:`HPC` systems to perform
-:term:`CFD` on :term:`GPU`-accelerated systems. By using the :term:`OCCA` library's unified
-:term:`API`, nekRS can run on :term:`CPUs<CPU>` and on :term:`GPU`-accelerated :term:`CPUs<CPU>` that
-support :term:`CUDA`, :term:`HIP`, or :term:`OpenCL`.
+.. mdinclude:: _includes/README.md
+   :start-line: 12
+   :end-line: 28
 
-This guide is intended to help new users get started with using nekRS, as well as serve as a
-reference for more advanced users. Because the :term:`Nek5000` code is somewhat of a predecessor to
-nekRS, some aspects of the current nekRS design are selected to enable faster translation of
-:term:`Nek5000` input files into nekRS input files. Throughout this documentation, all such
-:term:`Nek5000`-oriented settings will be referred to as "legacy" settings. Because these
-:term:`Nek5000`-oriented settings require proficiency in Fortran, structured text formats,
-and several additional input files, all new users are encouraged to adopt the nekRS-based problem setup.
-
-We recommend working through this user guide in the order below. At the very least, please
-read :ref:`case` page.
+This documentation is intended to help new users get started with using *nekRS*, as well as serve as a reference for more advanced users.
+For the uninitated user we recommend working through this user guide in the order below. 
+At the very least, please read :ref:`case` page for a description of *nekRS* case setup and case file structure.
 
 .. note::
 
-   This documentation is a work in progress, and will undergo big changes as more
-   features are added to nekRS. Please open issues to track any missing information.
+   This documentation is a work in progress, and is expected to undergo major changes as more features are added to nekRS. Please open issues on the `nekRS documentation Github repository <https://github.com/Nek5000/nekRS_doc>`_ to track any missing information or to request modification of existing information.
 
 Table of Contents
 -----------------
@@ -47,3 +41,8 @@ Table of Contents
 .. * :ref:`genindex`
 .. * :ref:`modindex`
 .. * :ref:`search`
+
+.. mdinclude:: _includes/README.md
+   :start-line: 87
+   :end-line: 108
+
