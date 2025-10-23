@@ -17,7 +17,13 @@ At the very least, please read :ref:`case` page for a description of *nekRS* cas
 
 .. note::
 
-   This documentation is a work in progress, and is expected to undergo major changes as more features are added to nekRS. Please open issues on the `nekRS documentation Github repository <https://github.com/Nek5000/nekRS_doc>`_ to track any missing information or to request modification of existing information.
+   The instructions in this documentation are specific to `v25.x <https://github.com/Nek5000/nekRS/tree/next>`_.
+   The documentation does not currently support earlier versions of *nekRS*.
+
+.. note::
+
+   This documentation is a work in progress, and is expected to undergo major changes as more features are added to nekRS. 
+   Please open issues on the `nekRS documentation Github repository <https://github.com/Nek5000/nekRS_doc>`_ to track any missing information or to request modification of existing information.
 
 Table of Contents
 -----------------
