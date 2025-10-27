@@ -15,13 +15,13 @@ An overview of these are presented in the image below .
 
 There are a minimum of three files required to run a case:
 
-* Parameter file, with ``.par`` extension. This sets parameters used by the case and can be modified between runs.
-* Mesh file, with ``.re2`` extension. This file defines the geometry of the case.
-* User-defined host file, with ``.udf`` extension. This is used to set specific equations of the case, initial/boundary conditions, data outputs and other user definable behaviour.
+* **Parameter file**, with ``.par`` extension. This sets simulation parameters used by the case and can be modified between runs.
+* **Mesh file**, with ``.re2`` extension. This file defines the geometry of the case.
+* **User-defined host file**, with ``.udf`` extension. This is used to set specific equations of the case, initial/boundary conditions, data outputs and other user definable behaviour.
 
 With one optional file
 
-* Trigger file, with ``.upd`` extension. This file allows modifications to the simulation during execution.
+* **Trigger file**, with ``.upd`` extension. This file allows modifications to the simulation during execution.
 
 The case name is the common prefix applied to these files - for instance, a complete input description with a case name of "eddy" would be given by the files ``eddy.par``, ``eddy.re2``, ``eddy.udf``, and ``eddy.upd``.
 The only restrictions on the case name are:
@@ -31,17 +31,25 @@ The only restrictions on the case name are:
 
 The following sections describe the structure and syntax for each of these files for a general case.
 
+
 .. _parameter_file:
 
 Parameter File (.par)
 ---------------------
 
-Most information about the problem setup is defined in the parameter file.
-This file is organized in a number of sections, each with a number of keys.
+.. tip::
+
+   The user can access the manual containing specifications of the parameter file using ``nrsman`` as follows
+
+   .. code-block:: bash
+
+      nrsman par
+
+Most information about the problem setup is defined in the parameter (``.par``) file.
+This file is organized in a number of **sections**, each with a number of **keys**.
 Values are assigned to these keys in order to control the simulation settings.
 
-The general structure of the ``.par`` file is as
-follows, where ``FOO`` and ``BAR`` are both section names, with a number of (key, value) pairs.
+The general structure of the ``.par`` file is as follows, where ``FOO`` and ``BAR`` are both section names, with a number of (key, value) pairs.
 
 .. code-block:: ini
 
@@ -53,50 +61,220 @@ follows, where ``FOO`` and ``BAR`` are both section names, with a number of (key
     alpha = beta
     gamma = delta + keyword=value + ... 
 
-The valid sections for setting up a nekRS simulation are:
+The valid sections for setting up a *NekRS* simulation are:
 
-* ``OCCA``: backend :term:`OCCA` device settings
-* ``GENERAL``: generic settings for the simulation
-* ``PROBLEMTYPE``: settings for the governing equations
-* ``MESH``: mesh related settings
-* ``GEOM``: ?
-* ``VELOCITY``: settings for the velocity solver
-* ``PRESSURE``: settings for the pressure solver
-* ``BOOMERAMG``: settings for the (optional) :term:`AMG` solver
-* ``SCALAR``: default scalar settings
-* ``SCALAR FOO``: settings for the ``FOO`` scalar
-* ``TEMPERATURE``: settings for the temperature solution
-* ``CASEDATA``: custom settings
+* ``GENERAL``: generic settings for the simulation (mandatory, see :ref:`General Parameters<sec:generalpars>`)
+* ``OCCA``: backend :term:`OCCA` device settings (optional, see :ref:`OCCA section<sec:occa>`)
+* ``PROBLEMTYPE``: settings for the governing equations (optional, see :ref:`Problem Type<sec:problemtype>`)
+* ``MESH``: mesh related settings (optional, see :ref:`Mesh Parameters<sec:meshpars>`)
+* ``GEOM``: **TODO**
+* Field Settings (see :ref:`Field Settings<sec:field_settings>`)
 
-Each of the keys and value types are described below. 
+  * ``FLUID VELOCITY``: settings for the velocity solver
+
+  * ``FLUID PRESSURE``: settings for the pressure solver 
+
+  * ``SCALAR``: default scalar settings
+
+    * ``SCALAR FOO``: settings for the ``FOO`` scalar
+
+* ``BOOMERAMG``: settings for the Hypre's :term:`AMG` solver
+* ``NEKNEK``: settings for the *NekNek* module in *NekRS* (see :ref:`NekNek Parameters <sec:neknekpars>`)
+* ``CVODE``: settings for the CVODE solver (see :ref:`CVODE Parameters <sec:cvodepars>`)
+  
+The user also has the option to specify additional sections to define custom control keys in ``.par`` file.
+These sections must be declared at the top of the ``.par`` file using ``userSections`` key as shown in the below example
+
+.. code-block:: ini
+
+   userSections = CASEDATA
+
+   ...
+
+   [CASEDATA]
+   key = value
+
+.. note::
+
+  - Section name and key/value pairs are treated as case insensitive
+  - Values enclosed within quotes maintain case sensitivity
+  - Values prefixed with 'env::' are interpreted as references to environment variables
 
 .. _sec:generalpars:
 
 General Parameters
 """"""""""""""""""
 
-+-----------------------------+-------------------------------+-------------------------------------------------------------------------+
-| Key                         | Value(s)                      | Description                                                             |
-+=============================+===============================+=========================================================================+
-| ``verbose``                 | true/false [D]                | toggles output to logfile                                               |
-+-----------------------------+-------------------------------+-------------------------------------------------------------------------+
-| ``polynomialOrder``         | <int>                         | polynomial order of solution                                            |
-+-----------------------------+-------------------------------+-------------------------------------------------------------------------+
-| ``dealiasing``              | true[D] / false               | toggler over-integration/dealiasing of convective term                  |
-+-----------------------------+-------------------------------+-------------------------------------------------------------------------+
-| ``cubaturePolynomialOrder`` | <int>                         | polynomial order of dealiasing                                          |
-|                             | 3/2*(polynomialOrder+1)-1 [D] |                                                                         |
-+-----------------------------+-------------------------------+-------------------------------------------------------------------------+
-| ``startFrom``               | <string>                      | Absolute relative path of the field file to restart the simulation from |
-|                             | + time=<float>                | reset to specified time                                                 |
-|                             | + x                           | read mesh coordinates                                                   |
-|                             | + u                           | read velocity                                                           |
-|                             | + s or s00 s01 s02 ...        | read all or list of scalars                                             |
-|                             | + int                         | interpolate                                                             |
-+-----------------------------+-------------------------------+-------------------------------------------------------------------------+
+.. _tab:generalparams:
 
-.. literalinclude:: ../_includes/parHelp.txt
-   :language: none
+.. csv-table:: ``GENERAL`` keys in the ``.par`` file
+   :widths: 20,20,60
+   :header: Key, Value(s), Description/Note(s)/Default Value
+
+   ``polynomialOrder``,``<int>``, "``polynomialOrder`` > 10 is currently not supported"
+   ``dealiasing``,``true`` / ``false``, "Enables/disables over-integration of convective term |br| Default = ``true``"
+   ``cubaturePolynomialOrder``,``<int>``, "Polynomial order of ``dealiasing`` |br| Default = 3/2*(``polynomialOrder`` +1)-1"
+   ``verbose``,``true`` / ``false``, "``true`` instructs *NekRS* to print detailed diagnostics to *logfile* |br| Default = ``false``"
+   ``redirectOutputTo``,``<string>``,"String entry for the name of the *logfile* to direct *NekRS* output"
+   ``startFrom``,"``<string>`` |br| ``+ time=<float>`` |br| ``+ x`` |br| ``+ u`` |br| ``+ s or s00 s01 s02 ...`` |br| ``+ int``", "Restart from specified ``<string>`` file |br| reset ``time`` to specified value |br| read mesh coordinates |br| read velocity |br| read all scalar or specified scalars |br| interpolate solution (useful if mesh coordinates are different)" 
+   ``timeStepper``,``tombo1`` / ``tombo2`` / ``tombo3``," Order of time discretization for BDFk/EXTk scheme |br| Default = ``tombo2``"
+   ``stopAt``,``numSteps`` / ``endTime`` / ``elapsedTime``, "stop criterion |br| Default = ``numSteps``"
+   ``numSteps``,``<int>``, "Number of simulation time steps"
+   ``endTime``,``<float>``,"Simulation end time"
+   ``elapsedTime``,``<float>``,"Simulation time in wall clock minutes"
+   ``dt``,``<float>`` |br| ``+ targetCFL = <float>`` |br| ``+ max = <float>`` |br| ``+ initial = <float>`` , "Time step size |br| adjust ``dt`` to match ``targetCFL`` |br| max limit of ``dt`` |br| Initial ``dt`` "
+   ``advectionSubCyclingSteps``,``<int>``,"Number of OIFS sub-steps for advection |br| Default = ``0`` (OIFS turned off)"
+   ``constFlowRate``,"``meanVelocity = <float>`` |br| ``meanVolumetricFlow = <float>`` |br| ``+ direction = <X,Y,Z>``","Specifies constant flow velocity |br| Specifies constant volumetric flow rate |br| Specifies flow direction" 
+   ``scalars``,"``<string>, <string> ...``","Name of scalar fields to be solved"
+   ``checkPointEngine``,``<string>`` |br| ``nek`` / ``adios``,"Specifies engine to write field files |br| Default = ``nek``"
+   ``checkPointPrecision``,``<int>`` |br| ``32`` / ``64``,"Specifies precision of field files |br| Default = ``32``"
+   ``checkPointControl``,``steps`` / ``simulationTime``,"Specifies check point frequency control type |br| Default = ``steps``"
+   ``checkPointInterval``,``<int>`` / ``<float>`` |br| 0 |br| -1, "Specifies check point frequency (``<int>`` for ``steps`` / ``<float>`` for ``simulationTime``) |br| ``0`` implies at end of simulation |br| ``-1`` disables checkpointing" 
+   ``udf``,"``''<string>''``","Optional name of user-defined host function file |br| Default is ``<case>.udf``"
+   ``oudf``,"``''<string>''``","Optional name of user-defined OCCA kernel function file |br| As a default *NekRS* expects these are defined in :ref:`OKL block <okl_block>` in ``.udf`` file"
+   ``usr``,"``''<string>''``","Optional name of user-defined legacy *Nek5000* (fortran) function file |br| Default is ``<case>.usr``"
+   ``regularization``,"","Specifies regularization options for all fields |br| See :ref:`common field settings<sec:common_settings>` for details"
+
+.. _sec:occa:
+
+OCCA Parameters
+""""""""""""""""
+.. _tab:occaparams:
+
+.. csv-table:: ``OCCA`` keys in the ``.par`` file
+   :widths: 20,20,60
+   :header: Key, Value(s), Description/Note(s)/Default Value
+
+   ``backend``, |br| ``SERIAL`` / |br| ``CUDA`` / |br| ``HIP`` /|br| ``DPCPP``,"Specifies the *device* for JIT compilation. Default is defined ``$NEKRS_HOME/nekrs.conf`` |br| CPU |br| NVIDIA GPU (CUDA) |br| AMD GPU (HIP) |br| Intel GPU (oneAPI)"
+   ``deviceNumber``,``<int>`` |br| ``LOCAL-RANK``,"Default is ``LOCAL-RANK``"
+   ``platformNumber``,``<int>``, "Only used by ``DPCPP`` |br| Default is ``0``"
+
+.. _sec:problemtype:
+
+Problem Type Parameters
+""""""""""""""""""""""""""
+.. _tab:problemparams:
+
+.. csv-table:: ``PROBLEMTYPE`` keys in the ``.par`` file
+   :widths: 20,20,60
+   :header: Key, Value(s), Description/Note(s)/Default Value
+
+   ``equation``,``stokes`` |br| ``navierStokes`` |br| ``+ variableViscosity``, "Stokes solver |br| Navier-Stokes solver |br| uses stress formulation (required for spatially varying viscosity)"
+
+.. _sec:meshpars:
+
+Mesh Parameters
+""""""""""""""""
+.. _tab:meshparams:
+
+.. csv-table:: ``MESH`` keys in the ``.par`` file
+   :widths: 20,20,60
+   :header: Key, Value(s), Description/Note(s)/Default Value
+
+   ``partitioner``,``rbc`` / ``rsb`` / ``rbc+rsb``,"Specifies mesh partitioner |br| Default = ``rbc+rsb`` "
+   ``boundaryIDMap``,"``<int>, <int>, ...``", "Map mesh boundary ids to 1,2,3,... |br| See :ref:`boundary conditions<boundary_conditions>` for details"
+   ``boundaryIDMapFluid``,"``<int>, <int>, ...``", "Required for conjugate heat transfer cases |br| See :ref:`boundary conditions<boundary_conditions>` for details"
+   ``connectivityTol``,"``<float>``","Specifies mesh tolerance for partitioner |br| Default = ``0.2``"
+   ``file``,"``''<string>''``","Optional name of mesh (``.re2``) file |br| Default is ``<case>.re2``"
+
+
+.. _sec:field_settings:
+
+Field Settings
+"""""""""""""""""""""
+
+The sections for specific fields, including velocity (``FLUID VELOCITY``), pressure (``FLUID PRESSURE``) and scalars (``SCALAR`` or ``SCALAR FOO``) contain keys to describe linear solver setting for the corresponding field.
+Most of the keys in the field sections are similar, described in :ref:`Common Field Settings <sec:common_settings>`.
+Some specific field keys are shown below:
+
+.. _tab:velocityparams:
+
+.. csv-table:: ``FLUID VELOCITY`` settings in the ``.par`` file
+   :widths: 20,20,60
+   :header: Key, Value(s), Description/Note(s)/Default Value
+  
+   ``density`` / ``rho``,``<float>``, "Fluid density"
+   ``viscosity`` / ``mu``,``<float>``, "Fluid dynamic viscosity"
+
+
+.. _tab:scalarparams:
+
+.. csv-table:: ``SCALAR FOO`` settings in the ``.par`` file (specific to scalar ``FOO``)
+   :widths: 20,20,60
+   :header: Key, Value(s), Description/Note(s)/Default Value
+  
+   ``mesh``,``fluid`` |br| ``+ solid``, "Specifies the mesh region where scalar ``FOO`` is solved (relevant to :term:`CHT` case) |br| Default = ``fluid``"
+   ``transportCoeff``,``<float>``, "Transport property for the scalar ``FOO`` (e.g., :math:`\rho c_p` for ``TEMPERATURE``) in the ``fluid`` ``mesh``"
+   ``diffusionCoeff``,``<float>``, "Diffusion coefficient for the scalar ``FOO`` (e.g., :math:`k` for ``TEMPERATURE``) in the ``fluid`` ``mesh``"
+   ``transportCoeffSolid``,``<float>``, "Transport property for the scalar ``FOO`` (e.g., :math:`\rho c_p` for ``TEMPERATURE``) in the ``solid`` ``mesh``"
+   ``diffusionCoeffSolid``,``<float>``, "Diffusion coefficient for the scalar ``FOO`` (e.g., :math:`k` for ``TEMPERATURE``) in the ``solid`` ``mesh``"
+
+.. _sec:common_settings:
+
+Common Field Settings
+^^^^^^^^^^^^^^^^^^^^^
+
+The following table describes settings and corresponding keys for the linear solver.
+The keys are common to all solution fields, including velocity, pressure and scalar fields.
+These are to be included in the ``.par`` file under appropriate section for ``FLUID VELOCITY``, ``FLUID PRESSURE``, general ``SCALAR`` and specific scalar (``SCALAR FOO``).
+
+.. note::
+
+   Linear solver settings for all scalar fields can be commonly specified under the ``SCALAR`` section.
+   Any setting under the specific ``SCALAR FOO`` section will override the common settings under ``SCALAR`` for ``FOO`` field
+
+.. _tab:commonparams:
+
+.. csv-table:: Common settings for all fields in the ``.par`` file
+   :widths: 20,20,60
+   :header: Key, Value(s), Description/Note(s)/Default Value
+
+   ``solver``,"``none`` |br| ``user`` |br| ``cvode`` |br| ``CG`` |br| ``+ combined`` |br| ``+ block`` |br| ``+ flexible`` |br| ``+ maxiter=<int>`` |br| ``GMRES`` |br| ``+ flexible`` |br| ``+ maxiter=<int>`` |br| ``+ nVector=<int>`` |br|  ``+ iR``","Solve off |br| user-specified |br| CVODE solver (see :ref:`sec:cvodepars`) |br| Conjugate gradient solver. **Default solver for velocity and scalar equation** |br| **Default for scalar equation** |br| **Default velocity solver** |br| . |br| . |br| . |br| Generalized Minimal Residual solver. **Default solver for pressure** |br| **Default for pressure** |br| . |br| Dimension of Krylov space |br| Iterative refinment "  
+   ``residualTol``,"``<float>`` |br| ``+ relative=<float>``","absolute linear solver residual tolerance. Default = ``1e-4`` |br| use absolute/relative residual (whatever is reached first)"
+   ``absoluteTol``,"``<float>``","absolute solver tolerance (for CVODE only) |br| Default = ``1e-6``"
+   ``initialGuess``,"``previous`` |br| ``extrapolation`` |br| ``projection`` |br| ``projectionAconj`` |br| ``+ nVector=<int>``", ". |br| **Default for velocity and scalars** |br| . |br| Defaults for pressure |br| dimension of projection space"
+   ``preconditioner``,"``Jacobi`` |br| ``multigrid`` |br| ``+ multiplicative`` |br| ``+ additive`` |br| ``+ SEMFEM`` |br| ``SEMFEM``","**Default for velocity and scalars** |br| Polynomial multigrid + coarse grid projection. **Default for pressure** |br| Default |br| . |br| smoothed SEMFEM |br| ."
+   ``coarseGridDiscretization``,"``FEM`` |br| ``+ Galerkin`` |br| ``SEMFEM``","Linear finite element discretization. Default |br| coarse grid matrix by Galerkin projection |br| Linear FEM approx on high-order nodes"
+   ``coarseSolver/semfemSolver``,"``smoother`` |br| ``jpcg`` |br| ``+ residualTol=<float>`` |br| ``+ maxiter=<int>`` |br| ``boomerAMG`` |br| ``+ smoother`` |br| ``+ cpu`` |br| ``+ device`` |br| ``+ overlap``", ". |br| Jacobi preconditioned CG |br| . |br| . |br| Hypre's AMG solver |br| . |br| . |br| . |br| overlap coarse grid solve in additive MG cycle"
+   ``pMGSchedule``,"``p=<int>, degree=<int>, ...``","custom polynomial order and Chebyshev order for each pMG level"
+   ``smootherType``,"``Jacobi`` |br| ``ASM, RAS`` |br| ``+ Chebyshev`` |br| ``+ FourthChebyshev`` |br| ``+ FourthOptChebyshev`` |br| ``+ maxEigenvalueBoundFactor=<float>``",". |br| overlapping additive/restrictive Schwarz |br| 1st Kind Chebyshev acceleration |br| 4th Kind Chebyshev acceleration |br| 4th Opt Chebyshev acceleration |br| ."
+   ``checkPointing``, ``true``/``false``, "Turns on/off checkpointing for specific field |br| Default = ``true``"
+   ``boundaryTypeMap``,"``<bcType for ID 1>, <bcType for ID 1>, ...``","See :ref:`boundary_conditions` for details"
+   ``regularization``,"``hpfrt`` |br| ``+ nModes=<int>`` |br| ``+ scalingCoeff=<float>`` |br| ``gjp`` |br| ``+ scalingCoeff=<float>`` |br| ``avm`` |br| ``+ c0`` |br| ``+ scalingCoeff=<float>`` |br| ``+ noiseThreshold=<float>`` |br| ``+ decayThreshold=<float>`` |br| ``+ activationWidth=<float>``","High-pass filter stabilization |br| number of modes |br| filter strength |br| Gradient Jump Penalty |br| scaling factor in penalty factor fit |br| Artificial Viscosity Method |br| make viscosity C0 |br| . |br| smaller values will be considered to be noise |br| . |br| half-width of activation function"
+
+.. _sec:cvodepars:
+
+CVODE Parameters
+"""""""""""""""""""""
+.. _tab:cvodeparams:
+
+.. csv-table:: ``CVODE`` settings in the ``.par`` file
+   :widths: 20,20,60
+   :header: Key, Value(s), Description/Note(s)/Default Value
+
+   ``solver``,"``cbGMRES, GMRES`` |br| ``+ nVector=<int>``", "Linear solver |br| Dimension of Krylov space"
+   ``gsType``,"``classical, modified``", ""
+   ``relativeTol``,"``<float>``", "relative tolerance |br| Default = ``1e-4``"
+   ``epsLin``,``<float>``,"ratio between linear and nonlinear tolerances |br| Default = ``0.5``"
+   ``dqSigma``,``<float>``,"step size for Jv difference quotient |br| Default = ``automatic``"
+   ``maxSteps``,``<int>``,""
+   ``sharedRho``,"``true`` / ``false``", "use same *density* field for all but the first scalar |br| Default = ``false``"
+   ``jtvRecycleProperties``,"``true`` / ``false``","recycle property (freeze) evaluation for Jv |br| Default = ``true``"
+   ``dealiasing``,"``true`` / ``false``",""
+
+.. _sec:neknekpars:
+
+NekNek Parameters
+"""""""""""""""""""""
+.. _tab:neknekparams:
+
+.. csv-table:: ``NEKNEK`` settings in the ``.par`` file
+   :widths: 20,20,60
+   :header: Key, Value(s), Description/Note(s)/Default Value
+
+   ``boundaryEXTOrder``,``<int>``, "Boundary extrapolation order |br| Default = ``1``. >1 may require additional corrector steps"
+   ``multirateTimeStepping``,"``true, false`` |br| ``+ correctorSteps=<int>``","Default = ``false`` |br| Outer corrector steps. Default is ``0``. Note: ``boundaryEXTOrder`` > 1 requires ``correctorSteps`` > 0 for stability"
+   
 
 Mesh File (.re2)
 ----------------

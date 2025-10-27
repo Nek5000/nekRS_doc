@@ -29,6 +29,9 @@ Glossary
     CFL
       Courant-Friedrichs-Lewy
 
+    CHT
+      Conjugate Heat Transfer
+
     CUDA
       Compute Unified Device Architecture, or Nvidia's :term:`API` for programming with :term:`GPUs<GPU>`
 

@@ -32,7 +32,6 @@ Table of Contents
    :maxdepth: 2
 
    quickstart
-   installing
    problem_setup/_problem_setup
    tutorials/_tutorials
    developer_guide/_developer_guide

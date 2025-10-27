@@ -193,8 +193,8 @@ Scripts
 
 Let’s walk through some useful batch scripts provided by *NekRS*:
 
-- ``nekmpi <case> #`` runs *NekRS* case in foreground on ``#`` number of processors.
-- ``nekbmpi <case> #`` runs *NekRS* case in background on ``#`` number of processors.
+- ``nrsmpi <case> #`` runs *NekRS* case in foreground on ``#`` number of processors.
+- ``nrsbmpi <case> #`` runs *NekRS* case in background on ``#`` number of processors.
 - ``nrsvis <case>`` creates metadata file required by `VisIt <https://wci.llnl.gov/simulation/computer-codes/visit/>`_ and `ParaView <https://www.paraview.org/>`_.
 - ``nrsman env`` lists useful environment variables for *NekRS*
 - ``nrsman par`` details all options and settings for the *NekRS* ``.par`` case file
