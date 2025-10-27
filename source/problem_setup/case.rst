@@ -16,8 +16,8 @@ An overview of these are presented in the image below .
 There are a minimum of three files required to run a case:
 
 * **Parameter file**, with ``.par`` extension. This sets simulation parameters used by the case and can be modified between runs.
-* **Mesh file**, with ``.re2`` extension. This file defines the geometry of the case.
 * **User-defined host file**, with ``.udf`` extension. This is used to set specific equations of the case, initial/boundary conditions, data outputs and other user definable behaviour.
+* **Mesh file**, with ``.re2`` extension. This file defines the geometry of the case.
 
 With one optional file
 
@@ -82,8 +82,20 @@ The valid sections for setting up a *NekRS* simulation are:
 * ``NEKNEK``: settings for the *NekNek* module in *NekRS* (see :ref:`NekNek Parameters <sec:neknekpars>`)
 * ``CVODE``: settings for the CVODE solver (see :ref:`CVODE Parameters <sec:cvodepars>`)
   
+.. note::
+
+  - Section name and key/value pairs are treated as case insensitive
+  - Values enclosed within quotes maintain case sensitivity
+  - Values prefixed with 'env::' are interpreted as references to environment variables
+
+.. _sec:user_section:
+
+User Sections
+""""""""""""""""""
+
 The user also has the option to specify additional sections to define custom control keys in ``.par`` file.
 These sections must be declared at the top of the ``.par`` file using ``userSections`` key as shown in the below example
+
 
 .. code-block:: ini
 
@@ -94,11 +106,6 @@ These sections must be declared at the top of the ``.par`` file using ``userSect
    [CASEDATA]
    key = value
 
-.. note::
-
-  - Section name and key/value pairs are treated as case insensitive
-  - Values enclosed within quotes maintain case sensitivity
-  - Values prefixed with 'env::' are interpreted as references to environment variables
 
 .. _sec:generalpars:
 
@@ -276,8 +283,152 @@ NekNek Parameters
    ``multirateTimeStepping``,"``true, false`` |br| ``+ correctorSteps=<int>``","Default = ``false`` |br| Outer corrector steps. Default is ``0``. Note: ``boundaryEXTOrder`` > 1 requires ``correctorSteps`` > 0 for stability"
    
 
+.. _udf_functions:
+
+User-Defined Host File (.udf)
+-----------------------------
+
+The ``.udf`` file is a :term:`OKL` and C++ mixed language source file, where user code used to formulate the case is placed.
+This code is placed in various user-defined functions (*UDFs*) and these can be used to perform virtually any action that can be programmed in C++.
+Some of the more common examples are setting initial conditions, querying the solution at regular intervals, and defining custom material properties and source terms.
+The available functions that you may define in the ``.udf`` file are as follows.
+
+.. _okl_block:
+
+OKL block
+"""""""""
+
+The ``.udf`` typically includes a ``#ifdef __okl__`` block which is where all OKL code is placed that runs on the compute backend specified to :term:`OCCA`.
+The most frequent use of this block is to provide the functions for boundary conditions that require additional information, such as a value to impose for a Dirichlet velocity condition, or a flux to impose for a Neumann condition.
+Additional user functions may be placed in this block to allow advanced modification of the simulation or post-processing functionality, such as calculating exact values at a specified time point.
+Example generic skeleton of typical code structure in :term:`OKL` block is shown below:
+
+.. code-block::
+  
+  #ifdef __okl__
+
+  @kernel void computeexact(const dlong Ntotal)
+  {
+    for (dlong n = 0; n < Ntotal; ++n; @tile(p_blockSize, @outer, @inner)) {
+      if (n < Ntotal) {
+        // some code
+      }
+    }
+  }
+
+  void udfDirichlet(bcData \*bc)
+  {
+    if(isField("fluid velocity")) {
+      bc->uxFluid = 1.0;
+      bc->uyFluid = 0.0;
+      bc->uzFluid = 0.0;
+    }
+    else if (isField("fluid pressure")) {
+      bc->pFluid = 0.0;
+    }
+    else if (isField("scalar temperature")) {
+      bc->sScalar = 0.0;
+    }
+  }
+
+  void udfNeumann(bcData \*bc)
+  {
+    if(isField("fluid velocity")) {
+      bc->tr1 = 0.0;
+      bc->tr2 = 0.0;
+    }
+    else if (isField("scalar temperature")) {
+      bc->fluxScalar = 0.0;
+    }
+  }
+
+  #endif
+
+.. tip::
+
+  If the user-defined functions are sufficiently large, it is conventional practice to write them in a ``.oudf`` file which is included within the ``ifdef`` block instead of the functions in the ``.udf`` file, as follows:
+
+  .. code-block:: c++
+
+     #ifdef __okl__
+
+     #include "case.oudf"
+
+     #endif
+
+Details of the ``udfDirichlet`` and ``udfNeumann`` functions used for setting Dirichlet and Neumann boundary conditions, respectively, can be found in :ref:`boundary_conditions`.
+
+.. _udf_setup0:
+
+UDF_Setup0
+""""""""""
+
+This user-defined function is passed the nekRS :term:`MPI` communicator ``comm`` and a data structure containing all of the user-specified simulation options, ``options``.
+This function is called once at the beginning of the simulation *before* initializing the nekRS internals such as the mesh, solvers, and solution data arrays.
+Because virtually no aspects of the nekRS simulation have been initialized at the point when this function is called, this function is primarily used to modify or read the user settings.
+Example usage is show below:
+
+.. code-block:: c++
+  
+   static dfloat P_GAMMA;
+
+   void UDF_Setup0(MPI_Comm comm, setupAide &options)
+   {
+     platform->par->extract("casedata","p_gamma",P_GAMMA);
+   }
+
+   void UDF_LoadKernels(deviceKernelProperties& kernelInfo)
+   {
+     kernelInfo.define("p_GAMMA") = P_GAMMA;
+   }
+
+In the above example ``UDF_Setup0`` routine is used to read ``p_gamma`` key value defined in user section ``CASEDATA`` in the ``.par`` file (see :ref:`user section <sec:user_section>`).
+``platform->par->extract`` is a convenient function available in *NekRS* to perform this operation.
+The extracted value is assigned to a global variable ``P_GAMMA`` defined at the top of ``.udf`` file and later assigned to a preprocessor macro, made available on the device kernels during JIT compilation.
+
+UDF_LoadKernels
+"""""""""""""""
+
+As shown in the example above, ``UDF_LoadKernels`` is primarily used in the ``.udf`` file to append preprocessor macros (global directives) to kernel files.
+It takes an argument ``deviceKernelProperties& kernelInfo`` which stores the metadata for kernel compilation.
+``kernelInfo.define`` function is used to define the kernel macros and these can later be used in any of the kernel functions.
+
+UDF_Setup
+"""""""""
+
+The ``UDF_Setup`` function is called once at the beginning of the simulation *after* initializing the mesh arrays, solution arrays, material property arrays, and boundary field mappings. 
+It is typically the function in ``.udf`` the user will interact with the most. 
+Various operations are performed within this routine, including, but not limited to:
+
+* Assign initial conditions (see :ref:`initial_conditions`).
+* Mesh manipulation (see :ref:`tutorial_rans` tutorial).
+* Assign function pointers to user-defined spatially varying material properties (see :ref:`properties`).
+* Assign function pointers to user-defined source terms (see :ref:`source_terms`).
+* Initialize and setup RANS turbulence models (see :ref:`ktau_model`)
+* Initialize and setup Low-Mach compressible model (see :ref:`lowmach_model`)
+* Initialize solution recyling routines and arrays (see :ref:`recycling`)
+* Allocate ``bc->o_usrwrk`` array for assigning user-defined boundary conditions (see *TODO*)
+* Initialize time averaging routines and arrays (see *TODO*)
+
+
+UDF_ExecuteStep
+"""""""""""""""
+
+This user-defined function provides the most flexibility of all the *NekRS* user-defined functions.
+It is called once at the start of the simulation just before beginning the time stepping, and then once per time step after running each step.
+Various operations are performed within this routine, including, but not limited to:
+
+* Call time averaging routines (see *TODO*).
+* Call solution recycling routines (see :ref:`recycling`).
+* Various post-processing operations:
+
+  * Extracting data over a line (see :ref:`extract_line`).
+  * Write custom field files (see *TODO*)
+
 Mesh File (.re2)
 ----------------
+
+*TODO*
 
 The nekRS mesh file is provided in a binary format with a nekRS-specific
 ``.re2`` extension. This format can be produced by either:
@@ -331,112 +482,6 @@ transfer problems requires additional pre-processing steps that are described in
 of this section describes how to generate a mesh in ``.re2`` format, assuming
 any pre-processing steps have been done for the special cases of conjugate heat transfer.
 
-.. _udf_functions:
-
-User-Defined Host File (.udf)
------------------------------
-
-The ``.udf`` file is a :term:`OKL` and C++ mixed language source file where user code 
-used to formulate the case is placed. This code is placed in various functions
-and these can be used to perform virtually any action that can be programmed in
-C++. Some of the more common examples are setting initial conditions, querying
-the solution at regular intervals, and defining custom material properties and
-source terms. The available functions that you may define in the ``.udf`` file
-are as follows.
-
-.. _okl_block:
-
-OKL block
-"""""""""
-
-The ``.udf`` typically has a ``#ifdef __okl__`` block near the start which is 
-where all OKL code will be placed that will run on the compute backed specified to
-:term:`OCCA`. The most frequent use of this block is to provide the functions 
-for boundary conditions that require additional information, such as a value to
-impose for a Dirichlet velocity condition, or a flux to impose for a Neumann
-temperature condition. Additional user functions may be placed in this block to
-allow advanced modification of the simulation or functionality such as calculating
-exact values at a specified time point.
-
-.. tip::
-
-  If the user generated functions are sufficiently large, or in older nekRS examples 
-  you may see a ``.oudf`` file which is included within the ``ifdef`` block 
-  instead of the functions being in the ``.udf`` file.
-
-.. code-block::
-  
-  #ifdef __okl__
-
-  @kernel void computeexact(const dlong Ntotal)
-  {
-    for (dlong n = 0; n < Ntotal; ++n; @tile(p_blockSize, @outer, @inner)) {
-      if (n < Ntotal) {
-        // some code
-      }
-    }
-  }
-
-  void velocityDirichletConditions(bcData *bc)
-  {
-    // some code
-    bc->u = u;
-    bc->v = v;
-    bc->w = w;
-  }
-
-  void scalarDirichletConditions(bcData *bc)
-  {
-    // some code
-    bc->s = s
-  }
-
-  void scalarNeumannConditions(bcData *bc)
-  {
-    bc->flux = tflux;
-  }
-
-.. _udf_setup0:
-
-UDF_Setup0
-""""""""""
-
-This user-defined function is passed the nekRS :term:`MPI` communicator ``comm`` and a data
-structure containing all of the user-specified simulation options, ``options``. This function is
-called once at the beginning of the simulation *before* initializing the nekRS internals
-such as the mesh, solvers, and solution data arrays. Because virtually no aspects of
-the nekRS simulation have been initialized at the point when this function is called,
-this function is primarily used to modify the user settings. For the typical user,
-all relevant settings are already exposed through the ``.par`` file; any desired
-changes to settings should therefore be performed by modifying the ``.par`` file.
-
-This function is intended for developers or advanced users to overwrite any user
-settings that may not be exposed to the ``.par`` file. For instance, setting
-``timeStepper = tombo2`` in the ``GENERAL`` section triggers a number of other internal
-settings in nekRS that do not need to be exposed to the typical user, but that perhaps
-a developer may want to modify for testing purposes.
-
-UDF_Setup
-"""""""""
-
-This user-defined function is passed the nekRS simulation object ``nrs``. This function
-is called once at the beginning of the simulation *after* initializing the mesh, solution
-arrays, material property arrays, and boundary field mappings. This function is most
-commonly used to:
-
-* Apply initial conditions to the solution
-* Assign function pointers to user-defined source terms and material properties
-
-Any other additional setup actions that depend on initialization of the solution arrays
-and mesh can of course also be placed in this function.
-
-UDF_ExecuteStep
-"""""""""""""""
-
-This user-defined function is probably the most flexible of the nekRS user-defined
-functions. This function is called once at the start of the simulation just before
-beginning the time stepping, and then once per time step after running each step.
-
 .. _trigger_file:
 
 Trigger Files (.upd)
@@ -444,5 +489,5 @@ Trigger Files (.upd)
 
 **TODO** Full description
 
-Allows modifications to the simulation during execution. Can be edited and then
-notify of changes through sending a signal MPI rank 0.
+Allows modifications to the simulation during execution.
+Can be edited and then notify of changes through sending a signal MPI rank 0.

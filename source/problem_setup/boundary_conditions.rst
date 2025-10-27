@@ -157,6 +157,8 @@ Internal / Periodic
 Perodicity is linked to the mesh connectivity and is handled by the meshing tool.
 
 
+.. _recycling:
+
 Turbulent Inflow (for LES/DNS)
 ------------------------------
 

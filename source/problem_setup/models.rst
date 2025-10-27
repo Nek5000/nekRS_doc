@@ -125,11 +125,10 @@ Generally recommended settings, specified in ``.par`` file, are as follows
    [GENERAL]
    regularization = hpfrt + nModes=1 + scalingCoeff=10
 
-RANS models
-"""""""""""
-
 .. _ktau_model:
 
+RANS models
+"""""""""""
 .. note::
   Pertinent example case: `ktauChannel <https://github.com/Nek5000/nekRS/tree/next/examples/ktauChannel>`_
 
@@ -273,6 +272,8 @@ These must be explicitly assigned in the :ref:`okl block <okl_block>` section of
  This is done using ``bc->id`` identifier in the :term:`okl block`. 
  See :ref:`boundary conditions section <boundary_conditions>` for usage details on how to specify boundary conditions.
   
+.. _lowmach_model:
+
 Low-Mach Compressible Model
 ---------------------------
 
@@ -482,6 +483,7 @@ while for ideal gas it is,
   In case of simulations involving multiple species (e.g., reactive flows), ``lowMach::qThermalSingleComponent`` is not valid. 
   A custom user routine will be required to account for divergence contribution from all species
 
+.. _source_terms:
 
 Custom Source Terms
 --------------------

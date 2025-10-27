@@ -209,6 +209,8 @@ Optional: Post-processing Routines
 For the convenience of the user, post-processing routines are provided in the above downloadable ``.udf`` file.
 The routines are specific to this case, but may be adopted for other cases with suitable modifications.
 
+.. _extract_line:
+
 Data Extraction Along a Line
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
