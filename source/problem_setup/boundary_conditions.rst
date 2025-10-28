@@ -4,7 +4,7 @@ Boundary conditions
 ===================
 
 Boundary conditions for each mesh boundary should normally be set in the :ref:`parameter_file`, using the ``boundaryTypeMap`` parameter.
-This is used within the ``FLUID VELOCITY``, ``SCALAR TEMPERATURE`` or ``SCALAR XXXXX`` sections to set the boundary conditions of the respective solvers.
+This is used within the ``FLUID VELOCITY``, ``SCALAR FOO`` sections to set the boundary conditions of the respective fields.
 
 Available Types
 ---------------

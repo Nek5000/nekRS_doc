@@ -19,8 +19,9 @@ There are a minimum of three files required to run a case:
 * **User-defined host file**, with ``.udf`` extension. This is used to set specific equations of the case, initial/boundary conditions, data outputs and other user definable behaviour.
 * **Mesh file**, with ``.re2`` extension. This file defines the geometry of the case.
 
-With one optional file
+Some optional files can also be included:
 
+* **Legacy Nek5000 user file**, with ``.usr`` extension. This file allows usage of *Nek5000*, legacy, Fortran 77 user routines.
 * **Trigger file**, with ``.upd`` extension. This file allows modifications to the simulation during execution.
 
 The case name is the common prefix applied to these files - for instance, a complete input description with a case name of "eddy" would be given by the files ``eddy.par``, ``eddy.re2``, ``eddy.udf``, and ``eddy.upd``.
@@ -416,6 +417,7 @@ UDF_ExecuteStep
 
 This user-defined function provides the most flexibility of all the *NekRS* user-defined functions.
 It is called once at the start of the simulation just before beginning the time stepping, and then once per time step after running each step.
+Two arguments are passed to this routine, including current time (``double``) and timestep (``int``).
 Various operations are performed within this routine, including, but not limited to:
 
 * Call time averaging routines (see *TODO*).
@@ -424,6 +426,143 @@ Various operations are performed within this routine, including, but not limited
 
   * Extracting data over a line (see :ref:`extract_line`).
   * Write custom field files (see *TODO*)
+
+.. _usr_functions:
+
+Legacy Nek5000 User File (.usr)
+--------------------------------
+
+*NekRS* provides an optional framework for legacy interface with the *Nek5000* code, allowing access to fortran 77 based *Nek5000* user routines to perform custom operations.
+The user has the option to include ``<case>.usr`` in the case directory to include the usual *Nek5000* user routines. 
+For users unfamiliar with *Nek5000* code, more information can be found in :ref:`Nek5000 documentation<https://nek5000.github.io/NekDoc/>`_  
+Note that not all *Nek5000* routines are called by *NekRS*. 
+More commonly, the user may require call to the ``userchk()`` routine in *Nek5000* for post-processing operations. 
+If required, it must be explicitly called from ``.udf`` file as shown below:
+
+.. code-block:: c++
+
+   void UDF_ExecuteStep(double time, int tstep)
+   {
+     if(nrs->checkpointStep) {
+        nrs->copyToNek(time, tstep);
+        nek::userchk();
+     }
+   }
+
+For most applications, the ``userchk`` routine will be called from ``UDF_ExecuteStep`` function, likely for post-processing operations.
+``nrs->copyToNek`` copies all solution fields from :term:`OCCA` arrays to *Nek5000* (fortran) arrays. 
+This call is necessary before calling ``nek::userchk`` in order for the user to perform any post-processing on field arrays in *Nek5000*.
+
+.. warning::
+
+   The ``nrs->copyToNek`` call performs expensive operation of copying the data from :term:`OCCA` arrays to Nek5000.
+   This must be done sparingly, only at certain time steps in the simulation.
+   Remember to call this routine within suitable ``if`` condition block.
+   As shown in the example above, ``nrs->copyToNek`` and ``nek::userchk`` are called only at ``checkPointStep``.
+
+Details on *Nek5000* ``.usr`` file can be found :ref:`here <https://nek5000.github.io/NekDoc/problem_setup/usr_file.html#user-routines-file-usr>`_ and specific information on ``userchk`` fortran routine :ref:`here <https://nek5000.github.io/NekDoc/problem_setup/usr_file.html#userchk>`_.
+
+Other *Nek5000* user routines that are internally called by *NekRS* during initialization are ``usrdat0``, ``usrdat``, ``usrdat2`` and ``usrdat3``.
+Details on these initialization routines can be found :ref:`here <https://nek5000.github.io/NekDoc/problem_setup/usr_file.html#initialization-routines>`_.
+These routines can be optionally used for specifying boundary conditions, mesh manipulation, parameter specification or other initialization operations. 
+
+Legacy Data Interface
+"""""""""""""""""""""
+
+*NekRS* provides an in-built mechanism to pass variables or array pointers to share data between *Nek5000* and *NekRS* through ``nekrs_registerPtr`` fortran routine.
+Consider the following code snippet in ``.usr`` file:
+
+.. code-block:: fortran
+
+   subroutine userchk()
+   include 'SIZE'
+   include 'TOTAL'
+
+   common /exact/ uexact(lx1,ly1,lz1,lelt*3),
+  &               texact(lx1,ly1,lz1,lelt) 
+
+   real uexact, texact
+
+   call computeexact(uexact, texact)
+
+   call nekrs_registerPtr('uexact', uexact)
+   call nekrs_registerPtr('texact', texact)
+
+   return
+   end
+
+   subroutine computeexact(uexact, texact)
+   include 'SIZE'
+   include 'TOTAL'
+
+   ! Code to compute exact solution
+
+   return
+   end
+
+   subroutine usrdat0
+
+   real gamma 
+   save gamma
+
+   gamma = 1.4
+
+   call nekrs_registerPtr('gamma', gamma)
+
+   return
+   end
+
+In the above code, two routines are defined in the fortran common block ``exact`` to store exact solution for velocity and temperature.
+The exact solutions are computed in ``userchk`` and the array pointers for the solutions are registered using ``nekrs_registerPtr`` subroutine.
+It takes two arguments - a string identifier for the pointer and the pointer to the array to be registered. 
+(Note that pointer to the first memory location in the array is registered).
+It is critical that these arrays are declared in fortran common block or that they are saved for them to be visible globally.
+Another example is shown with a variable, ``gamma``, in ``usrdat0`` routine, which is also registered in a similar manner.
+Note that the variable ``gamma`` is made static (or saved in memory) using the ``save`` command. 
+
+These pointers can now be accessed in ``.udf`` file and used to transfer data between *NekRS* and *Nek5000*.
+Example usage in ``.udf`` is shown below:
+
+.. code-block:: c++
+
+   static dfloat gamma;
+
+   void UDF_Setup0(MPI_Comm comm, setupAide &options)
+   {
+      gamma = *nek::ptr<double>("gamma"); 
+   }
+
+   void UDF_LoadKernels(deviceKernelProperties& kernelInfo)
+   {
+      kernelInfo.define("p_GAMMA") = gamma;
+   }
+
+   void UDF_ExecuteStep(double time, int tstep)
+   {
+      if(nrs->lastStep) {
+        auto mesh = nrs->meshV;
+
+        nek::userchk();
+
+        std::vector<double> uexact(nek::ptr<double>("uexact"), nek::ptr<double>("uexact") + nrs->fluid->fieldOffsetSum);
+        std::vector<double> texact(nek::ptr<double>("texact"), nek::ptr<double>("texact") + mesh->Nlocal);
+
+        auto o_uexact = platform->device.malloc<dfloat>(nrs->fluid->fieldOffsetSum);
+        auto o_texact = platform->device.malloc<dfloat>(nrs->fluid->fieldOffset);
+
+        o_uexact.copyFrom(uexact);
+        o_texact.copyFrom(texact);
+
+        //compute error here...
+      }
+   }
+
+As shown, ``nek::ptr`` stores the registered pointers, which is recognised using the string identifier specified in ``.usr`` file.  
+In ``UDF_Setup0`` the value referenced by the pointer corresponding to ``gamma`` is assigned to the C++ static variable of the same name.
+It is later used to define a kernel macro in ``UDF_LoadKernels`` as shown.
+Similarly, the pointers to fortran arrays identified by ``uexact`` and ``texact`` are used to copy data onto ``std::vector`` containers of the same name.
+The arrays are then copied from ``std::vector`` containers to :term:`OCCA` arrays ``o_uexact`` and ``o_texact``.
+The user can then perform any required operations on these arrays, such as compute solution error norms.
 
 Mesh File (.re2)
 ----------------
