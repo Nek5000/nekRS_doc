@@ -434,7 +434,7 @@ Legacy Nek5000 User File (.usr)
 
 *NekRS* provides an optional framework for legacy interface with the *Nek5000* code, allowing access to fortran 77 based *Nek5000* user routines to perform custom operations.
 The user has the option to include ``<case>.usr`` in the case directory to include the usual *Nek5000* user routines. 
-For users unfamiliar with *Nek5000* code, more information can be found in :ref:`Nek5000 documentation<https://nek5000.github.io/NekDoc/>`_  
+For users unfamiliar with *Nek5000* code, more information can be found in `Nek5000 documentation <https://nek5000.github.io/NekDoc/>`_.
 Note that not all *Nek5000* routines are called by *NekRS*. 
 More commonly, the user may require call to the ``userchk()`` routine in *Nek5000* for post-processing operations. 
 If required, it must be explicitly called from ``.udf`` file as shown below:
@@ -460,10 +460,10 @@ This call is necessary before calling ``nek::userchk`` in order for the user to 
    Remember to call this routine within suitable ``if`` condition block.
    As shown in the example above, ``nrs->copyToNek`` and ``nek::userchk`` are called only at ``checkPointStep``.
 
-Details on *Nek5000* ``.usr`` file can be found :ref:`here <https://nek5000.github.io/NekDoc/problem_setup/usr_file.html#user-routines-file-usr>`_ and specific information on ``userchk`` fortran routine :ref:`here <https://nek5000.github.io/NekDoc/problem_setup/usr_file.html#userchk>`_.
+Details on *Nek5000* ``.usr`` file can be found `here <https://nek5000.github.io/NekDoc/problem_setup/usr_file.html#user-routines-file-usr>`_ and specific information on ``userchk`` fortran routine `here <https://nek5000.github.io/NekDoc/problem_setup/usr_file.html#userchk>`_.
 
 Other *Nek5000* user routines that are internally called by *NekRS* during initialization are ``usrdat0``, ``usrdat``, ``usrdat2`` and ``usrdat3``.
-Details on these initialization routines can be found :ref:`here <https://nek5000.github.io/NekDoc/problem_setup/usr_file.html#initialization-routines>`_.
+Details on these initialization routines can be found `here <https://nek5000.github.io/NekDoc/problem_setup/usr_file.html#initialization-routines>`_.
 These routines can be optionally used for specifying boundary conditions, mesh manipulation, parameter specification or other initialization operations. 
 
 Legacy Data Interface
