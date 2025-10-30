@@ -3,7 +3,10 @@
 Initial conditions
 ==================
 
-The initial conditions are specified in ``UDF_Setup()`` routine.
+Specification in ``.udf`` File
+-------------------------------
+
+The initial conditions are specified in ``UDF_Setup()`` routine in :ref:`udf_functions` file.
 The following minimal example code snippet sets initial conditions for all three components of velocity, temperature and two passive scalars.
 
 .. code-block::
@@ -37,8 +40,12 @@ The following minimal example code snippet sets initial conditions for all three
     
 The above code block is not executed if the simulation is restarted from a prior field file, in which case the initial conditions are read from that file.
 It is essential to perform initialization only if ``platform->options.getArgs("RESTART FILE NAME").empty()`` is true, otherwise the restart field information will be over-written.
-``U, temp, ps1, ps2`` are temporary array containers declared on host memory to assign initial conditions. 
+``U, temp, ps1, ps2`` are temporary array ``std::vector`` containers declared on host memory to assign initial conditions. 
 The call ``xyzHost()`` returns the ``x,y,z`` coordinate arrays which may be used to assign spatially varying initial conditions as shown above.
 Finally, the host arrays must be copied into device arrays, ``nrs->fluid->o_U`` and ``nrs->scalar->o_solution`` using ``copyFrom`` calls for initial conditions to be made available for subsequent simulation.
-Note that the scalar identifiers ``"temperature"``, ``"ps1"`` and ``"ps2"`` must be identical to the string declared in ``.par`` file (see :ref:`Parameter file section for details <parameter_file>`)
+Note that the scalar identifiers ``"temperature"``, ``"ps1"`` and ``"ps2"`` must be identical to the string declared in the :ref:`General Section <sec:generalpars>` in the ``.par`` file (see :ref:`Parameter file section for details <parameter_file>`)
 
+Restarting from Field File
+-------------------------------
+
+*TODO*
