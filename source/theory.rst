@@ -3,12 +3,42 @@
 Theory
 ======
 
-This page provides an overview of the governing equations available in nekRS. nekRS includes models for incompressible flow, a partially compressible low-Mach formulation, the Stokes equations, and the :math:`k`-:math:`\tau` :term:`RANS` equations.
+This page provides an overview of the governing equations available in *NekRS*. *NekRS* includes solvers for incompressible Navier-Stokes equation, a partially compressible low-Mach formulation, the Stokes equations, the :math:`k`-:math:`\tau` :term:`RANS` equations and for general passive scalar advection-diffusion equation, including temperature equation.
+
+.. _intro_comput_approach:
+
+Computational Approach
+----------------------
+
+The spatial discretization in *NekRS* is based on the spectral element method (SEM) [Patera1984]_, which is a high-order weighted residual technique similar to the finite element method.
+In the SEM, the solution and data are represented in terms of :math:`N^{th}`-order tensor-product polynomials within each of :math:`E` deformable hexahedral (brick) elements.
+Typical discretizations involve elements of order upto :math:`N=10` (corresponding to maximum of 1331 :term:`GLL` points per element).
+Vectorization and cache efficiency derive from the local lexicographical ordering within each macro-element and from the fact that the action of discrete operators, which nominally have :math:`O(EN^6)` nonzeros, can be evaluated in only :math:`O(EN^4)` work and :math:`O(EN^3)` storage through the use of tensor-product-sum factorization [Orszag1980]_.
+The SEM exhibits very little numerical dispersion and dissipation, which can be important, for example, in stability calculations, for long time integrations, and for high Reynolds number flows.
+We refer to [Denville2002]_ for more details.
+
+*NekRS* solves the unsteady incompressible two-dimensional, axisymmetric, or three-dimensional Stokes or Navier-Stokes equations with heat transfer in both stationary (fixed) or time-dependent geometry.
+It also solves the compressible Navier-Stokes in the Low Mach regime, and the magnetohydrodynamic equation (MHD).
+The solution variables are the fluid velocity :math:`\mathbf u=(u_{x},u_{y},u_{z})`, the pressure :math:`p`, the temperature :math:`T`.
+All of the above field variables are functions of space :math:`{\bf x}=(x,y,z)` and time :math:`t` in domains :math:`\Omega_f` and/or :math:`\Omega_s` defined in :numref:`fig-walls`.
+Additionally *NekRS* can handle conjugate heat transfer problems.
+
+.. _fig-walls:
+
+.. figure:: _static/img/walls.png
+    :align: center
+    :figclass: align-center
+    :alt: domains
+
+    Computational domain showing respective fluid and solid subdomains, :math:`\Omega_f` and
+    :math:`\Omega_s`.  The shared boundaries are denoted :math:`\partial\Omega_f=\partial\Omega_s`
+    and the solid boundary which is not shared by fluid is :math:`\overline{\partial\Omega_s}`,
+    while the fluid boundary not shared by solid :math:`\overline{\partial\Omega_f}`.
 
 .. _ins_model:
 
-Incompressible Flow
--------------------
+Incompressible Navier-Stokes Equations
+---------------------------------------
 
 The governing equations of incompressible flow in dimensional form are
 
@@ -120,8 +150,8 @@ The non-dimensional number here is the Peclet number, :math:`Pe=\frac{\rho_0 c_{
 
 .. _low_mach:
 
-Low-Mach Compressible Flow
---------------------------
+Low-Mach Compressible Flow Equations
+-------------------------------------
 
 The low-Mach compressible equations are derived from the fully compressible Navier-Stokes equations by filtering the acoustic waves, obtained by splitting the pressure into thermodynamic, :math:`p_t`, and hydrodynamic components :math:`p_1`. The resulting low-Mach compressible governing equations, in dimensional form, are (for complete derivation refer [Tombo1997]_ or [Paulucci1982]_)
 
