@@ -3,58 +3,47 @@
 Running
 =======
 
-This page gives information on how to run nekRS has been installed 
-(see :ref:`installing` ) and appropriate input files have been generated 
+This page gives information on how to run *NekRS* after it has been installed (see :ref:`Installation instructions <installing>` ) and appropriate input files have been generated 
 (see :ref:`case`).
-
-nekrs and nekrs32
 
 Native Running
 --------------
 
-The most basic way of running nekRS is in the directory with all the appropriate 
-files with the scenario name:
+To run *NekRS* natively from the directory containing the :ref:`case`, use the following general command
 
 .. code-block::
 
-    mpirun -np <number of MPI tasks> nekrs --setup <scenario>.par
+    mpirun -np <number of MPI tasks> nekrs --setup <par|sess file> [options]
 
-Below are the command line arguments that can be used to further modifiy how 
-nekRS is run.
+Below are the command line options/argument that can be used to further modifiy how *NekRS* is run.
 
-+------------------+--------------+-----------------------------------------------------+--------------------------------------------------------------------------------------------------+----------+
-|    Parameter     | Short option |                       Options                       |                                           Description                                            | Required |
-+==================+==============+=====================================================+==================================================================================================+==========+
-| ``--help``       | ``-h``       | None or ``par``                                     | Print help, either summary of command line argument                                              | No       |
-+------------------+--------------+-----------------------------------------------------+--------------------------------------------------------------------------------------------------+----------+
-| ``--setup``      | ``-s``       | None, ``par`` or ``sess file``                      | Specifies the location of files needed to initialise the simulation                              | Yes      |
-+------------------+--------------+-----------------------------------------------------+--------------------------------------------------------------------------------------------------+----------+
-| ``--build-only`` | ``-b``       | None or ``#procs``                                  | Initialise the simulation and run :ref:`just_in_time_compilation` only.                          | No       |
-+------------------+--------------+-----------------------------------------------------+--------------------------------------------------------------------------------------------------+----------+
-| ``--cimode``     | ``-c``       | None or ``<id>`` (N.B. If set must be >=0)          | Runs specific CI tests if available in the chosen simulation (see :ref:`contributing`)           | No       |
-+------------------+--------------+-----------------------------------------------------+--------------------------------------------------------------------------------------------------+----------+
-| ``--debug``      | ``-d``       | None                                                | Run in debug mode, IE print values of many of the variables while running                        | No       |
-+------------------+--------------+-----------------------------------------------------+--------------------------------------------------------------------------------------------------+----------+
-| ``--backend``    | ``-t``       | ``CPU``, ``CUDA``, ``HIP``, ``DPCPP`` or ``OPENCL`` | Manually set the backend device for running                                                      | No       |
-+------------------+--------------+-----------------------------------------------------+--------------------------------------------------------------------------------------------------+----------+
-| ``--device-id``  | ``-i``       | ``id`` or ``LOCAL-RANK``                            | Manually set OCCA device ID (I.E. for machines with multiple GPUs) or use ``LOCAL-RANK`` for CPU | No       |
-+------------------+--------------+-----------------------------------------------------+--------------------------------------------------------------------------------------------------+----------+
+.. _tab:runoptions:
+
+.. csv-table:: Command line options to run *NekRS*
+   :widths: 20,40,40,10
+   :header: Command line argument, Options, Description,Required
+
+   ``--help``,"None |br| ``par`` |br| ``env``", "Prints summary of available command line arguments |br| Prints summary of :ref:`Parameter file <parameter_file>` sections and keys |br| Prints list of *NekRS* enviorenment variables","No"
+   ``--setup``,``par`` file |br| ``sess`` file, "Name of ``.par`` file of the case |br| Name of ``.sess`` file (NekNek)","Yes"
+   ``--build-only``,"None |br| ``#procs``","Runs JIT compilation for ``np`` procs |br| Runs JIT compilation for specified number of processors","No"
+   ``--cimode``,"``<id>``","Runs *NekRS* in CI mode corresponding to specified ``<id>``","No"
+   ``--debug``,"None", Run *NekRS* in debug mode,"No"
+   ``--attach``,"None",?,"No"
+   ``--backend``,"``CPU`` |br| ``CUDA`` |br| ``HIP`` |br| ``DPCPP`` |br| ``OPENCL``","Manually set the backend device for running","No"
+   ``--output``,"``<local-path-to-logfile>``",Name of log file to print *NekRS* output,"No"
+   ``--device-id``,"``<id>`` |br| ``LOCAL-RANK``",Manually set OCCA device ID for GPU |br| For CPU,"No"
 
 .. _nekrs_scripts:
 
 MPI launch scripts
-------------------
+^^^^^^^^^^^^^^^^^^^
 
-A number of scripts ship with nekRS itself and are located in the 
-``$NEKRS_HOME/bin`` directory (see :ref:`nekrs_home`). A brief summary of these 
-scripts and their usage is as follows.
+A number of scripts ship with *NekRS* itself and are located in the ``$NEKRS_HOME/bin``. A brief summary of these scripts and their usage is as follows.
 
-* ``nrsmpi <casename> <processes>``: run nekRS in parallel with ``<processes>`` parallel
-  processes for the case files that are prefixed with ``casename``.
-* ``nrsbmpi <casename> <processes>``: same as ``nrsmpi``, except that nekRS runs
-  in the background
+* ``nrsmpi <casename> <processes>``: run *NekRS* in parallel with ``<processes>`` parallel processes for the case files that are prefixed with ``casename``.
+* ``nrsbmpi <casename> <processes>``: same as ``nrsmpi``, except that nekRS runs in the background and the output is printed to log file
 
-Queueing system
----------------
+Running on HPC Systems
+----------------------
 
-**TODO**
+Specific scripts and instructions for running on specific HPC systems can be found `in nekRS_HPCsupport Github repository <https://github.com/Nek5000/nekRS_HPCsupport>`_

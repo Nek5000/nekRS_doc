@@ -51,6 +51,8 @@ Most of these should either be available by default in your OS of choice, or can
 
 **TODO**: Instructions for installing GPU compilers
 
+.. _installing:
+
 ----------------
 Installing NekRS
 ----------------
