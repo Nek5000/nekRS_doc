@@ -21,14 +21,11 @@ There are a minimum of three files required to run a case:
 
 Some optional files can also be included:
 
+* **User-defined okl file**, with ``.oudf`` extension. This file conventionally has all the user defined device kernels. It must be included in :ref:`okl_block` of ``.udf`` file.
 * **Legacy Nek5000 user file**, with ``.usr`` extension. This file allows usage of *Nek5000*, legacy, Fortran 77 user routines.
-* **Trigger file**, with ``.upd`` extension. This file allows modifications to the simulation during execution.
 
-The case name is the common prefix applied to these files - for instance, a complete input description with a case name of "eddy" would be given by the files ``eddy.par``, ``eddy.re2``, ``eddy.udf``, and ``eddy.upd``.
-The only restrictions on the case name are:
-
-* It must be used as the prefix on all simulation files, and
-* Typical restrictions for naming files for your operating system
+The case name is the default prefix applied to these files - for instance, a complete input description with a case name of "eddy" would be given by the files ``eddy.par``, ``eddy.re2``, ``eddy.udf``.
+Optionally, the user can also define the names of ``.udf``, ``.oudf`` and ``.usr`` in the :ref:`sec:generalpars` section and name of ``.re2`` file in :ref:`sec:meshpars` section of ``.par`` file. 
 
 The following sections describe the structure and syntax for each of these files for a general case.
 
