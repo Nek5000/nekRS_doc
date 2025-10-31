@@ -126,8 +126,8 @@ A template example is as follows:
         auto o_mue = fluid->o_prop.slice(0 * fluid->fieldOffset);
         auto o_rho = fluid->o_prop.slice(1 * fluid->fieldOffset);
 
-        auto o_k = scalar->o_prop.slice(0 * scalar->fieldOffset("temperature"));
-        auto o_rhocp = scalar->o_prop.slice(1 * scalar->fieldOffset("temperature"));
+        auto o_k = scalar->o_prop.slice(0 * scalar->fieldOffset());
+        auto o_rhocp = scalar->o_prop.slice(1 * scalar->fieldOffset());
 
         fillProp(fluid->mesh->Nelements,
                  Re,
