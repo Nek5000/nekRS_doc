@@ -9,15 +9,14 @@ Quickstart
 Before You Begin...
 -------------------
 
-It is recommended that the user have basic familiarity with Linux or another Unix-based OS.
-The instructions provided in the quickstart guide and the tutorials use basic bash commands and assume the user has this knowledge.
-The instructions below are specific to building on your local system (your desktop or laptop).
+This guide assumes basic familiarity with Linux (or another Unix-like OS) and common ``bash`` commands.
+The steps below target building *nekRS* on a local machine (desktop or laptop). A GPU is not required.
 
 .. note::
 
    Specific instructions for installing on select :term:`HPC` systems can be found `here <https://github.com/Nek5000/nekRS_HPCsupport>`_.
 
-Before you begin installing note the following **requirements** for *nekRS*:
+Before you begin, note the following **requirements** for *nekRS*:
 
 .. mdinclude:: _includes/README.md
    :start-line: 32
