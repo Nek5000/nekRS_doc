@@ -113,7 +113,7 @@ Use the helper script ``./build.sh`` from the *nekRS* directory.
 
 The build script firsts configure CMake and prints a summary like:
 
-.. code-block::
+.. code-block:: none
 
   ----------------- Summary -----------------
   Installation directory: /home/usr/.local/nekrs
@@ -137,7 +137,7 @@ Review this output like the installation directory and compilers, and
 if it looks correct, press **Enter** to compile and install.
 On success, you’ll see:
 
-.. code-block::
+.. code-block:: none
 
   Hooray! You're all set. The installation is complete.
 
