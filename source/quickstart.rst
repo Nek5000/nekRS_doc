@@ -9,20 +9,19 @@ Quickstart
 Before You Begin...
 -------------------
 
-It is recommended that the user have basic familiarity with Linux or another Unix-based OS.
-The instructions provided in the quickstart guide and the tutorials use basic bash commands and assume the user has this knowledge.
-The instructions below are specific to building on your local system (your desktop or laptop). 
+This guide assumes basic familiarity with Linux (or another Unix-like OS) and common ``bash`` commands.
+The steps below target building *nekRS* on a local machine (desktop or laptop). A GPU is not required.
 
 .. note::
 
    Specific instructions for installing on select :term:`HPC` systems can be found `here <https://github.com/Nek5000/nekRS_HPCsupport>`_.
 
-Before you begin installing note the following **requirements** for *nekRS*:
+Before you begin, note the following **requirements** for *nekRS*:
 
 .. mdinclude:: _includes/README.md
    :start-line: 32
    :end-line: 36
-   
+
 Most of these should either be available by default in your OS of choice, or can be installed using a common package manager.
 
 .. tabs::
@@ -57,8 +56,8 @@ Most of these should either be available by default in your OS of choice, or can
 Installing NekRS
 ----------------
 
-Aquiring the Code
-^^^^^^^^^^^^^^^^^
+Acquiring the Code
+^^^^^^^^^^^^^^^^^^
 
 *NekRS* can be acquired by either downloading a release:
 
@@ -70,7 +69,7 @@ Aquiring the Code
     mv nekRS-25.0-rc1 nekRS
     cd nekRS
 
-or by cloning the Github repository:
+or by cloning the GitHub repository:
 
 .. code-block:: bash
 
@@ -87,33 +86,34 @@ or by cloning the Github repository:
 Building NekRS
 ^^^^^^^^^^^^^^
 
-From the *NekRS* directory the code can be build using the following general command
+Use the helper script ``./build.sh`` from the *nekRS* directory.
 
 .. code-block:: bash
 
-   CC=mpicc CXX=mpic++ FC=mpif77 ./build.sh [-DCMAKE_INSTALL_PREFIX=$HOME/.local/nekrs]
+   CC=mpicc CXX=mpic++ FC=mpif77 ./build.sh -DCMAKE_INSTALL_PREFIX=$HOME/.local/nekrs
 
-``CC``, ``CXX`` and ``FC`` are environment variables passed to ``cmake`` which specify the C, C++ and fortran compilers, respectively.
+- Adjust C, C++ and Fortran compilers via the environment variables
+  ``CC``, ``CXX`` and ``FC``.
+- Append any CMake options after ``build.sh``.
+  (e.g., ``-DCMAKE_INSTALL_PREFIX`` to specify the installation location.)
 
 .. note::
 
-    On your local system, these environment variables are optional provided you intend to use the system ``MPI`` installed using the ``apt`` or `brew`` package manager as shown :ref:`above <qstart_before>`.
-    If the ``MPI`` is installed in a custom location, these must be modified appropriately
-
-    .. code-block:: bash
-
-       CC=/path/to/mpi/bin/mpicc CXX=/path/to/mpi/bin/mpicxx FC=/path/to/mpi/bin/mpif77 ./build.sh
-
-``-DCMAKE_INSTALL_PREFIX`` is a ``cmake`` option which specifies the installation location of *NekRS*.
-The default location is ``$HOME/.local/nekrs``.
+    The environment variables and CMake options are optional.
+    ``CC=mpicc``, ``CXX=mpic++`` and ``FC=mpif77`` are usually the default system
+    ``MPI`` wrapper installed using the ``apt`` or ``brew`` package manager as shown
+    :ref:`above <qstart_before>`.
+    If MPI comes from a custom or vendor stack, set these variable accordingly.
 
 .. tip::
 
-   Make sure to remove the previous build and installation directory if updating *NekRS*
+   Like standard CMake workflows, *nekrs* configures and compiles in ``./build/``
+   and installs to ``CMAKE_INSTALL_PREFIX``. If you updates *NekRS* or your compiler
+   stacks, make sure to remove the previous ``build/`` and install directory.
 
-Running the build script will provide the following summary before compiling *NekRS*
+The build script firsts configure CMake and prints a summary like:
 
-.. code-block:: bash
+.. code-block:: none
 
   ----------------- Summary -----------------
   Installation directory: /home/usr/.local/nekrs
@@ -133,20 +133,36 @@ Running the build script will provide the following summary before compiling *Ne
   cmake --build ./build --target install -j8
   Please check the summary above carefully and press ENTER to continue or ctrl-c to cancel
 
-Check the installation directory and compiler info configured by the build system.
-Now, to continue to compile and install *NekRS*, just hit enter.
+Review this output like the installation directory and compilers, and
+if it looks correct, press **Enter** to compile and install.
+On success, you’ll see:
+
+.. code-block:: none
+
+  Hooray! You're all set. The installation is complete.
+
+.. tip::
+
+   Make sure the Default backend matches your hardware: ``CUDA`` (NVIDIA),
+   ``HIP`` (AMD), or ``SYCL`` (Intel).  If no GPU backend is detected at configure
+   time, NekRS falls back to ``Serial`` (CPU).  You can switch from a GPU default to
+   Serial at runtime, but not the other way around unless the GPU backend was
+   enabled during build.
 
 Setting the Environment
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Assuming you run ``bash`` and your install directory is ``$HOME/.local/nekrs``, add the following line to your ``$HOME/.bashrc``:
+Assuming the install directory is ``$HOME/.local/nekrs``, set ``NEKRS_HOME``
+(required) and optionally prepend its ``bin`` to ``PATH`` (recommended).
+For ``bash``:
 
 .. code-block:: bash
 
    export NEKRS_HOME=$HOME/.local/nekrs
    export PATH=$NEKRS_HOME/bin:$PATH
 
-Now, either continue in a new terminal or source the ``$HOME/.bashrc`` file to continue in the current terminal
+You may add these lines to ``$HOME/.bashrc`` for persistence.
+After the changes, open a new terminal or apply them now:
 
 .. code-block:: bash
 
@@ -154,40 +170,50 @@ Now, either continue in a new terminal or source the ``$HOME/.bashrc`` file to c
 
 You are now ready to run your *NekRS* cases!
 
+
 -----------------------------
 Running your first simulation
 -----------------------------
 
-Several *NekRS* example cases are packaged with the code and provided for the user.
-These are located in the ``examples`` folder in the *NekRS* directory.
-To run a simple channel flow case included in this folder, copy the example case to another location and run it as follows,
+Several example cases ship with *nekRS* and are installed under ``$NEKRS_HOME/examples``
+To run the ``channel`` example for a simple channel flow case, copy the case folder
+to scratch location and run it as follows,
 
 .. code-block:: bash
 
    cd ~
    mkdir scratch
    cd scratch
-   cp -r ~/nekRS/examples/channel .
+   cp -r $NEKRS_HOME/examples/channel .
    cd channel
    nrsmpi channel 2
 
 .. note::
 
-   It is recommended that the example case should be copied to another directory as shown above before running.
-   Avoid running in the ``nekRS/example`` folder.
+   To avoid the conflicts between builds and for cleaner version control, it is
+   recommended to run example case outside both the source directory and install directory.
 
-The final command will launch *NekRS* and the output will be shown in the current terminal window.
-The user may also run *NekRS* in the background as follows,
+The final command launches *NekRS* with 2 MPI ranks and print output in the current terminal.
+The user may also run *nekRS* in the background as follows:
 
 .. code-block:: bash
 
    nrsbmpi channel 2
 
-The above command will print output in ``logfile`` which the user can monitor as the case in running in the background using
+This redirects output to logfiles such as ``channel.log.2`` and creates a ``logfile``
+symlink, which users can monitor the progress with:
 
 .. code-block:: bash
 
    tail -f logfile
+
+.. tip::
+
+   *nekRS* binds 1 GPU to 1 MPI rank. If you saw an OCCA error that fails to
+   create device, you might want to either reduce the number of MPI ranks or
+   fall back to CPU backend via ``nrsbmpi channel 2 --backend serial``.
+   The detailed explaination of the argument can be found at :ref:`running`.
+
 
 -----------------------------
 Scripts
@@ -197,7 +223,7 @@ Let’s walk through some useful batch scripts provided by *NekRS*:
 
 - ``nrsmpi <case> #`` runs *NekRS* case in foreground on ``#`` number of processors.
 - ``nrsbmpi <case> #`` runs *NekRS* case in background on ``#`` number of processors.
-- ``nrsvis <case>`` creates metadata file required by `VisIt <https://wci.llnl.gov/simulation/computer-codes/visit/>`_ and `ParaView <https://www.paraview.org/>`_.
+- ``nrsvis <case>`` creates metadata file ``*.nek5000`` required by `VisIt <https://wci.llnl.gov/simulation/computer-codes/visit/>`_ and `ParaView <https://www.paraview.org/>`_. (Usually generated automatically; manual use is rarely needed.)
 - ``nrsman env`` lists useful environment variables for *NekRS*
 - ``nrsman par`` details all options and settings for the *NekRS* ``.par`` case file
 
@@ -205,5 +231,7 @@ Let’s walk through some useful batch scripts provided by *NekRS*:
 Visualization
 -----------------------------
 
-*NekRS* output (``.fld`` or ``0.f%05d``) files can be read by `VisIt <https://wci.llnl.gov/simulation/computer-codes/visit/>`_ or `ParaView <https://www.paraview.org/>`_.
-This requires using ``nrsvis <case>`` to generate a metadata file.
+*NekRS* output (``.fld`` or ``0.f%05d``) files can be read by `VisIt <https://wci.llnl.gov/simulation/computer-codes/visit/>`_ or `ParaView <https://www.paraview.org/>`_
+via opening the case metadata file ``<case>.nek5000``.
+This file is usually created automatically; if missing, generate it with ``nrsvis``.
+See :ref:`checkpointing_visualisation` for details.
