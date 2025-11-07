@@ -212,6 +212,7 @@ symlink, which users can monitor the progress with:
    *nekRS* binds 1 GPU to 1 MPI rank. If you saw an OCCA error that fails to
    create device, you might want to either reduce the number of MPI ranks or
    fall back to CPU backend via ``nrsbmpi channel 2 --backend serial``.
+   The detailed explaination of the argument can be found at :ref:`running`.
 
 
 -----------------------------
