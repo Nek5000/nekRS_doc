@@ -57,8 +57,8 @@ Most of these should either be available by default in your OS of choice, or can
 Installing NekRS
 ----------------
 
-Aquiring the Code
-^^^^^^^^^^^^^^^^^
+Acquiring the Code
+^^^^^^^^^^^^^^^^^^
 
 *NekRS* can be acquired by either downloading a release:
 
@@ -70,7 +70,7 @@ Aquiring the Code
     mv nekRS-25.0-rc1 nekRS
     cd nekRS
 
-or by cloning the Github repository:
+or by cloning the GitHub repository:
 
 .. code-block:: bash
 
@@ -142,6 +142,13 @@ On success, you’ll see:
 
   Hooray! You're all set. The installation is complete.
 
+.. tip::
+
+   Make sure the Default backend matches your hardware: ``CUDA`` (NVIDIA),
+   ``HIP`` (AMD), or ``SYCL`` (Intel).  If no GPU backend is detected at configure
+   time, NekRS falls back to ``Serial`` (CPU).  You can switch from a GPU default to
+   Serial at runtime, but not the other way around unless the GPU backend was
+   enabled during build.
 
 Setting the Environment
 ^^^^^^^^^^^^^^^^^^^^^^^
