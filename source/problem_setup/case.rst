@@ -23,6 +23,8 @@ Some optional files can also be included:
 
 * **User-defined okl file**, with ``.oudf`` extension. This file conventionally has all the user defined device kernels. It must be included in :ref:`okl_block` of ``.udf`` file.
 * **Legacy Nek5000 user file**, with ``.usr`` extension. This file allows usage of *Nek5000*, legacy, Fortran 77 user routines.
+* **Session file**, with ``.sess`` extension. This file is for NekNek only.
+  (See :ref:`overlapping_overset_grids` tutorial).
 
 The case name is the default prefix applied to these files - for instance, a complete input description with a case name of "eddy" would be given by the files ``eddy.par``, ``eddy.re2``, ``eddy.udf``.
 Optionally, the user can also define the names of ``.udf``, ``.oudf`` and ``.usr`` in the :ref:`sec:generalpars` section and name of ``.re2`` file in :ref:`sec:meshpars` section of ``.par`` file. 
@@ -51,13 +53,15 @@ The general structure of the ``.par`` file is as follows, where ``FOO`` and ``BA
 
 .. code-block:: ini
 
+  # This is a comment
   [FOO]
-    key = value
+    key = value # this is also a comment
     baz = bat
 
   [BAR]
     alpha = beta
-    gamma = delta + keyword=value + ... 
+    gamma = delta + keyword=value + ...   # composed value with inline keywords
+    theta = value1, value2, value3        # comma-separated list
 
 The valid sections for setting up a *NekRS* simulation are:
 
@@ -82,18 +86,19 @@ The valid sections for setting up a *NekRS* simulation are:
   
 .. note::
 
-  - Section name and key/value pairs are treated as case insensitive
-  - Values enclosed within quotes maintain case sensitivity
+  - Section name and key/value pairs are case insensitive
+  - Values are words with all spaces removed
+  - Values enclosed within quotes preserve case and whitespace
   - Values prefixed with 'env::' are interpreted as references to environment variables
+  - Values separated by commas forms a list
 
 .. _sec:user_section:
 
 User Sections
 """"""""""""""""""
 
-The user also has the option to specify additional sections to define custom control keys in ``.par`` file.
-These sections must be declared at the top of the ``.par`` file using ``userSections`` key as shown in the below example
-
+Custom sections may be added via the ``userSections`` key to pass additional
+keys into the code.
 
 .. code-block:: ini
 
@@ -114,15 +119,16 @@ General Parameters
 
 .. csv-table:: ``GENERAL`` keys in the ``.par`` file
    :widths: 20,20,60
+   :class: tall
    :header: Key, Value(s), Description/Note(s)/Default Value
 
    ``polynomialOrder``,``<int>``, "``polynomialOrder`` > 10 is currently not supported"
    ``dealiasing``,``true`` / ``false``, "Enables/disables over-integration of convective term |br| Default = ``true``"
-   ``cubaturePolynomialOrder``,``<int>``, "Polynomial order of ``dealiasing`` |br| Default = 3/2*(``polynomialOrder`` +1)-1"
+   ``cubaturePolynomialOrder``,``<int>``, "Polynomial order of ``dealiasing`` |br| Default = 3/2*(``polynomialOrder`` + 1) - 1"
    ``verbose``,``true`` / ``false``, "``true`` instructs *NekRS* to print detailed diagnostics to *logfile* |br| Default = ``false``"
    ``redirectOutputTo``,``<string>``,"String entry for the name of the *logfile* to direct *NekRS* output"
-   ``startFrom``,"``<string>`` |br| ``+ time=<float>`` |br| ``+ x`` |br| ``+ u`` |br| ``+ s or s00 s01 s02 ...`` |br| ``+ int``", "Restart from specified ``<string>`` file |br| reset ``time`` to specified value |br| read mesh coordinates |br| read velocity |br| read all scalar or specified scalars |br| interpolate solution (useful if mesh coordinates are different)" 
-   ``timeStepper``,``tombo1`` / ``tombo2`` / ``tombo3``," Order of time discretization for BDFk/EXTk scheme |br| Default = ``tombo2``"
+   ``startFrom``,"``""<string>"", ...`` |br| ``+ time=<float>`` |br| ``+ x`` |br| ``+ u`` |br| ``+ s or s00 s01 s02 ...`` |br| ``+ int``", "Restart from specified ``<string>`` file |br| reset ``time`` to specified value |br| read mesh coordinates |br| read velocity |br| read all scalar or specified scalars |br| interpolate solution (useful if mesh coordinates are different)"
+   ``timeStepper``,``tombo1`` / ``tombo2`` / ``tombo3``,"Order of time discretization for BDFk/EXTk scheme |br| Default = ``tombo2``"
    ``stopAt``,``numSteps`` / ``endTime`` / ``elapsedTime``, "stop criterion |br| Default = ``numSteps``"
    ``numSteps``,``<int>``, "Number of simulation time steps"
    ``endTime``,``<float>``,"Simulation end time"
@@ -135,9 +141,9 @@ General Parameters
    ``checkPointPrecision``,``<int>`` |br| ``32`` / ``64``,"Specifies precision of field files |br| Default = ``32``"
    ``checkPointControl``,``steps`` / ``simulationTime``,"Specifies check point frequency control type |br| Default = ``steps``"
    ``checkPointInterval``,``<int>`` / ``<float>`` |br| 0 |br| -1, "Specifies check point frequency (``<int>`` for ``steps`` / ``<float>`` for ``simulationTime``) |br| ``0`` implies at end of simulation |br| ``-1`` disables checkpointing" 
-   ``udf``,"``''<string>''``","Optional name of user-defined host function file |br| Default is ``<case>.udf``"
-   ``oudf``,"``''<string>''``","Optional name of user-defined OCCA kernel function file |br| As a default *NekRS* expects these are defined in :ref:`OKL block <okl_block>` in ``.udf`` file"
-   ``usr``,"``''<string>''``","Optional name of user-defined legacy *Nek5000* (fortran) function file |br| Default is ``<case>.usr``"
+   ``udf``,"``""<string>""``","Optional name of user-defined host function file |br| Default is ``<case>.udf``"
+   ``oudf``,"``""<string>""``","Optional name of user-defined OCCA kernel function file |br| As a default *NekRS* expects these are defined in :ref:`OKL block <okl_block>` in ``.udf`` file"
+   ``usr``,"``""<string>""``","Optional name of user-defined legacy *Nek5000* (fortran) function file |br| Default is ``<case>.usr``"
    ``regularization``,"","Specifies regularization options for all fields |br| See :ref:`common field settings<sec:common_settings>` for details"
 
 .. _sec:occa:
@@ -148,9 +154,10 @@ OCCA Parameters
 
 .. csv-table:: ``OCCA`` keys in the ``.par`` file
    :widths: 20,20,60
+   :class: tall
    :header: Key, Value(s), Description/Note(s)/Default Value
 
-   ``backend``, |br| ``SERIAL`` / |br| ``CUDA`` / |br| ``HIP`` /|br| ``DPCPP``,"Specifies the *device* for JIT compilation. Default is defined ``$NEKRS_HOME/nekrs.conf`` |br| CPU |br| NVIDIA GPU (CUDA) |br| AMD GPU (HIP) |br| Intel GPU (oneAPI)"
+   ``backend``, |br| ``SERIAL`` / |br| ``CUDA`` / |br| ``HIP`` /|br| ``DPCPP``,"Specifies the *device* for JIT compilation. Default is defined in ``$NEKRS_HOME/nekrs.conf`` |br| CPU |br| NVIDIA GPU (CUDA) |br| AMD GPU (HIP) |br| Intel GPU (oneAPI)"
    ``deviceNumber``,``<int>`` |br| ``LOCAL-RANK``,"Default is ``LOCAL-RANK``"
    ``platformNumber``,``<int>``, "Only used by ``DPCPP`` |br| Default is ``0``"
 
@@ -162,6 +169,7 @@ Problem Type Parameters
 
 .. csv-table:: ``PROBLEMTYPE`` keys in the ``.par`` file
    :widths: 20,20,60
+   :class: tall
    :header: Key, Value(s), Description/Note(s)/Default Value
 
    ``equation``,``stokes`` |br| ``navierStokes`` |br| ``+ variableViscosity``, "Stokes solver |br| Navier-Stokes solver |br| uses stress formulation (required for spatially varying viscosity)"
@@ -174,13 +182,14 @@ Mesh Parameters
 
 .. csv-table:: ``MESH`` keys in the ``.par`` file
    :widths: 20,20,60
+   :class: tall
    :header: Key, Value(s), Description/Note(s)/Default Value
 
    ``partitioner``,``rbc`` / ``rsb`` / ``rbc+rsb``,"Specifies mesh partitioner |br| Default = ``rbc+rsb`` "
    ``boundaryIDMap``,"``<int>, <int>, ...``", "Map mesh boundary ids to 1,2,3,... |br| See :ref:`boundary conditions<boundary_conditions>` for details"
    ``boundaryIDMapFluid``,"``<int>, <int>, ...``", "Required for conjugate heat transfer cases |br| See :ref:`boundary conditions<boundary_conditions>` for details"
    ``connectivityTol``,"``<float>``","Specifies mesh tolerance for partitioner |br| Default = ``0.2``"
-   ``file``,"``''<string>''``","Optional name of mesh (``.re2``) file |br| Default is ``<case>.re2``"
+   ``file``,"``""<string>""``","Optional name of mesh (``.re2``) file |br| Default is ``<case>.re2``"
 
 
 .. _sec:field_settings:
@@ -196,6 +205,7 @@ Some specific field keys are shown below:
 
 .. csv-table:: ``FLUID VELOCITY`` settings in the ``.par`` file
    :widths: 20,20,60
+   :class: tall
    :header: Key, Value(s), Description/Note(s)/Default Value
   
    ``density`` / ``rho``,``<float>``, "Fluid density"
@@ -206,6 +216,7 @@ Some specific field keys are shown below:
 
 .. csv-table:: ``SCALAR FOO`` settings in the ``.par`` file (specific to scalar ``FOO``)
    :widths: 20,20,60
+   :class: tall
    :header: Key, Value(s), Description/Note(s)/Default Value
   
    ``mesh``,``fluid`` |br| ``+ solid``, "Specifies the mesh region where scalar ``FOO`` is solved (relevant to :term:`CHT` case) |br| Default = ``fluid``"
@@ -231,7 +242,8 @@ These are to be included in the ``.par`` file under appropriate section for ``FL
 .. _tab:commonparams:
 
 .. csv-table:: Common settings for all fields in the ``.par`` file
-   :widths: 20,20,60
+   :widths: 15,35,50
+   :class: tall
    :header: Key, Value(s), Description/Note(s)/Default Value
 
    ``solver``,"``none`` |br| ``user`` |br| ``cvode`` |br| ``CG`` |br| ``+ combined`` |br| ``+ block`` |br| ``+ flexible`` |br| ``+ maxiter=<int>`` |br| ``GMRES`` |br| ``+ flexible`` |br| ``+ maxiter=<int>`` |br| ``+ nVector=<int>`` |br|  ``+ iR``","Solve off |br| user-specified |br| CVODE solver (see :ref:`sec:cvodepars`) |br| Conjugate gradient solver. **Default solver for velocity and scalar equation** |br| **Default for scalar equation** |br| **Default velocity solver** |br| . |br| . |br| . |br| Generalized Minimal Residual solver. **Default solver for pressure** |br| **Default for pressure** |br| . |br| Dimension of Krylov space |br| Iterative refinment "  
@@ -241,10 +253,10 @@ These are to be included in the ``.par`` file under appropriate section for ``FL
    ``preconditioner``,"``Jacobi`` |br| ``multigrid`` |br| ``+ multiplicative`` |br| ``+ additive`` |br| ``+ SEMFEM`` |br| ``SEMFEM``","**Default for velocity and scalars** |br| Polynomial multigrid + coarse grid projection. **Default for pressure** |br| Default |br| . |br| smoothed SEMFEM |br| ."
    ``coarseGridDiscretization``,"``FEM`` |br| ``+ Galerkin`` |br| ``SEMFEM``","Linear finite element discretization. Default |br| coarse grid matrix by Galerkin projection |br| Linear FEM approx on high-order nodes"
    ``coarseSolver/semfemSolver``,"``smoother`` |br| ``jpcg`` |br| ``+ residualTol=<float>`` |br| ``+ maxiter=<int>`` |br| ``boomerAMG`` |br| ``+ smoother`` |br| ``+ cpu`` |br| ``+ device`` |br| ``+ overlap``", ". |br| Jacobi preconditioned CG |br| . |br| . |br| Hypre's AMG solver |br| . |br| . |br| . |br| overlap coarse grid solve in additive MG cycle"
-   ``pMGSchedule``,"``p=<int>, degree=<int>, ...``","custom polynomial order and Chebyshev order for each pMG level"
+   ``pMGSchedule``,"``p=<int> + degree=<int>, ...``","custom polynomial order and Chebyshev order for each pMG level"
    ``smootherType``,"``Jacobi`` |br| ``ASM, RAS`` |br| ``+ Chebyshev`` |br| ``+ FourthChebyshev`` |br| ``+ FourthOptChebyshev`` |br| ``+ maxEigenvalueBoundFactor=<float>``",". |br| overlapping additive/restrictive Schwarz |br| 1st Kind Chebyshev acceleration |br| 4th Kind Chebyshev acceleration |br| 4th Opt Chebyshev acceleration |br| ."
    ``checkPointing``, ``true``/``false``, "Turns on/off checkpointing for specific field |br| Default = ``true``"
-   ``boundaryTypeMap``,"``<bcType for ID 1>, <bcType for ID 1>, ...``","See :ref:`boundary_conditions` for details"
+   ``boundaryTypeMap``,"``<bcType for ID 1>, <bcType for ID 2>, ...``","See :ref:`boundary_conditions` for details"
    ``regularization``,"``hpfrt`` |br| ``+ nModes=<int>`` |br| ``+ scalingCoeff=<float>`` |br| ``gjp`` |br| ``+ scalingCoeff=<float>`` |br| ``avm`` |br| ``+ c0`` |br| ``+ scalingCoeff=<float>`` |br| ``+ noiseThreshold=<float>`` |br| ``+ decayThreshold=<float>`` |br| ``+ activationWidth=<float>``","High-pass filter stabilization |br| number of modes |br| filter strength |br| Gradient Jump Penalty |br| scaling factor in penalty factor fit |br| Artificial Viscosity Method |br| make viscosity C0 |br| . |br| smaller values will be considered to be noise |br| . |br| half-width of activation function"
 
 .. _sec:cvodepars:
@@ -255,6 +267,7 @@ CVODE Parameters
 
 .. csv-table:: ``CVODE`` settings in the ``.par`` file
    :widths: 20,20,60
+   :class: tall
    :header: Key, Value(s), Description/Note(s)/Default Value
 
    ``solver``,"``cbGMRES, GMRES`` |br| ``+ nVector=<int>``", "Linear solver |br| Dimension of Krylov space"
@@ -275,6 +288,7 @@ NekNek Parameters
 
 .. csv-table:: ``NEKNEK`` settings in the ``.par`` file
    :widths: 20,20,60
+   :class: tall
    :header: Key, Value(s), Description/Note(s)/Default Value
 
    ``boundaryEXTOrder``,``<int>``, "Boundary extrapolation order |br| Default = ``1``. >1 may require additional corrector steps"
@@ -617,6 +631,32 @@ transfer problems requires additional pre-processing steps that are described in
 :ref:`Creating a Mesh for Conjugate Heat Tranfser <cht_mesh>` section. The remainder
 of this section describes how to generate a mesh in ``.re2`` format, assuming
 any pre-processing steps have been done for the special cases of conjugate heat transfer.
+
+
+.. _session_file:
+
+NekNek Session File (.sess)
+---------------------------
+
+NekNek allows coupling of multiple overlapping subdomains, relaxing the need for
+conformal meshes. Each *nekRS* instance uses its own `.par` file.
+In the ``.sess`` file, each line lists one instance as:
+``<path-to-par-file>:<num-mpi-ranks>;``
+
+Paths may be absolute or relative, and the sum of ranks over all instances must
+equal the total MPI ranks requested. Here is the ``eddyNekNek.sess`` example:
+
+.. code-block:: bash
+
+   inside/inside:1;
+   outside/outside:1;
+
+.. tip::                                                                        
+                                                                                
+   Using a subfolder per case is optional but recommended. On HPC systems, try
+   to size each session in units of a node. For example, if a node has 4 GPUs,
+   it’s often best to make each session’s MPI ranks a multiple of 4.
+
 
 .. _trigger_file:
 

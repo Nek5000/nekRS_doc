@@ -1,3 +1,35 @@
 .wy-nav-content {
     max-width: 90% !important;
 }
+
+/* tall: increase height in table if content includes <p> */
+table.tall td p,
+table.tall td span,
+table.tall td li,
+table.tall td ul,
+table.tall td ol,
+table.tall td code,
+table.tall td pre {
+  line-height: 1.4 !important;
+}
+
+/* Sphinx sometimes renders forced breaks as line-blocks */
+table.tall td .line-block,
+table.tall td .line-block .line {
+  line-height: 1.4 !important;
+}
+
+/* If RTD wraps tables responsively, mirror the above selectors */
+.wy-table-responsive table.tall td,
+.wy-table-responsive table.tall th,
+.wy-table-responsive table.tall td p,
+.wy-table-responsive table.tall td span,
+.wy-table-responsive table.tall td li,
+.wy-table-responsive table.tall td ul,
+.wy-table-responsive table.tall td ol,
+.wy-table-responsive table.tall td code,
+.wy-table-responsive table.tall td pre,
+.wy-table-responsive table.tall td .line-block,
+.wy-table-responsive table.tall td .line-block .line {
+  line-height: 1.4 !important;
+}
