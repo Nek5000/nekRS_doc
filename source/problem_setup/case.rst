@@ -27,7 +27,7 @@ Some optional files can also be included:
   (See :ref:`overlapping_overset_grids` tutorial).
 
 The case name is the default prefix applied to these files - for instance, a complete input description with a case name of "eddy" would be given by the files ``eddy.par``, ``eddy.re2``, ``eddy.udf``.
-Optionally, the user can also define the names of ``.udf``, ``.oudf`` and ``.usr`` in the :ref:`sec:generalpars` section and name of ``.re2`` file in :ref:`sec:meshpars` section of ``.par`` file. 
+Optionally, the user can also define the names of ``.udf``, ``.oudf`` and ``.usr`` in the :ref:`sec:generalpars` section and name of ``.re2`` file in :ref:`sec:meshpars` section of ``.par`` file.
 
 The following sections describe the structure and syntax for each of these files for a general case.
 
@@ -74,7 +74,7 @@ The valid sections for setting up a *NekRS* simulation are:
 
   * ``FLUID VELOCITY``: settings for the velocity solver
 
-  * ``FLUID PRESSURE``: settings for the pressure solver 
+  * ``FLUID PRESSURE``: settings for the pressure solver
 
   * ``SCALAR``: default scalar settings
 
@@ -83,7 +83,7 @@ The valid sections for setting up a *NekRS* simulation are:
 * ``BOOMERAMG``: settings for the Hypre's :term:`AMG` solver
 * ``NEKNEK``: settings for the *NekNek* module in *NekRS* (see :ref:`NekNek Parameters <sec:neknekpars>`)
 * ``CVODE``: settings for the CVODE solver (see :ref:`CVODE Parameters <sec:cvodepars>`)
-  
+
 .. note::
 
   - Section name and key/value pairs are case insensitive
@@ -135,12 +135,12 @@ General Parameters
    ``elapsedTime``,``<float>``,"Simulation time in wall clock minutes"
    ``dt``,``<float>`` |br| ``+ targetCFL = <float>`` |br| ``+ max = <float>`` |br| ``+ initial = <float>`` , "Time step size |br| adjust ``dt`` to match ``targetCFL`` |br| max limit of ``dt`` |br| Initial ``dt`` "
    ``advectionSubCyclingSteps``,``<int>``,"Number of OIFS sub-steps for advection |br| Default = ``0`` (OIFS turned off)"
-   ``constFlowRate``,"``meanVelocity = <float>`` |br| ``meanVolumetricFlow = <float>`` |br| ``+ direction = <X,Y,Z>``","Specifies constant flow velocity |br| Specifies constant volumetric flow rate |br| Specifies flow direction" 
+   ``constFlowRate``,"``meanVelocity = <float>`` |br| ``meanVolumetricFlow = <float>`` |br| ``+ direction = <X,Y,Z>``","Specifies constant flow velocity |br| Specifies constant volumetric flow rate |br| Specifies flow direction"
    ``scalars``,"``<string>, <string> ...``","Name of scalar fields to be solved"
    ``checkPointEngine``,``<string>`` |br| ``nek`` / ``adios``,"Specifies engine to write field files |br| Default = ``nek``"
    ``checkPointPrecision``,``<int>`` |br| ``32`` / ``64``,"Specifies precision of field files |br| Default = ``32``"
    ``checkPointControl``,``steps`` / ``simulationTime``,"Specifies check point frequency control type |br| Default = ``steps``"
-   ``checkPointInterval``,``<int>`` / ``<float>`` |br| 0 |br| -1, "Specifies check point frequency (``<int>`` for ``steps`` / ``<float>`` for ``simulationTime``) |br| ``0`` implies at end of simulation |br| ``-1`` disables checkpointing" 
+   ``checkPointInterval``,``<int>`` / ``<float>`` |br| 0 |br| -1, "Specifies check point frequency (``<int>`` for ``steps`` / ``<float>`` for ``simulationTime``) |br| ``0`` implies at end of simulation |br| ``-1`` disables checkpointing"
    ``udf``,"``""<string>""``","Optional name of user-defined host function file |br| Default is ``<case>.udf``"
    ``oudf``,"``""<string>""``","Optional name of user-defined OCCA kernel function file |br| As a default *NekRS* expects these are defined in :ref:`OKL block <okl_block>` in ``.udf`` file"
    ``usr``,"``""<string>""``","Optional name of user-defined legacy *Nek5000* (fortran) function file |br| Default is ``<case>.usr``"
@@ -207,7 +207,7 @@ Some specific field keys are shown below:
    :widths: 20,20,60
    :class: tall
    :header: Key, Value(s), Description/Note(s)/Default Value
-  
+
    ``density`` / ``rho``,``<float>``, "Fluid density"
    ``viscosity`` / ``mu``,``<float>``, "Fluid dynamic viscosity"
 
@@ -218,7 +218,7 @@ Some specific field keys are shown below:
    :widths: 20,20,60
    :class: tall
    :header: Key, Value(s), Description/Note(s)/Default Value
-  
+
    ``mesh``,``fluid`` |br| ``+ solid``, "Specifies the mesh region where scalar ``FOO`` is solved (relevant to :term:`CHT` case) |br| Default = ``fluid``"
    ``transportCoeff``,``<float>``, "Transport property for the scalar ``FOO`` (e.g., :math:`\rho c_p` for ``TEMPERATURE``) in the ``fluid`` ``mesh``"
    ``diffusionCoeff``,``<float>``, "Diffusion coefficient for the scalar ``FOO`` (e.g., :math:`k` for ``TEMPERATURE``) in the ``fluid`` ``mesh``"
@@ -246,7 +246,7 @@ These are to be included in the ``.par`` file under appropriate section for ``FL
    :class: tall
    :header: Key, Value(s), Description/Note(s)/Default Value
 
-   ``solver``,"``none`` |br| ``user`` |br| ``cvode`` |br| ``CG`` |br| ``+ combined`` |br| ``+ block`` |br| ``+ flexible`` |br| ``+ maxiter=<int>`` |br| ``GMRES`` |br| ``+ flexible`` |br| ``+ maxiter=<int>`` |br| ``+ nVector=<int>`` |br|  ``+ iR``","Solve off |br| user-specified |br| CVODE solver (see :ref:`sec:cvodepars`) |br| Conjugate gradient solver. **Default solver for velocity and scalar equation** |br| **Default for scalar equation** |br| **Default velocity solver** |br| . |br| . |br| . |br| Generalized Minimal Residual solver. **Default solver for pressure** |br| **Default for pressure** |br| . |br| Dimension of Krylov space |br| Iterative refinment "  
+   ``solver``,"``none`` |br| ``user`` |br| ``cvode`` |br| ``CG`` |br| ``+ combined`` |br| ``+ block`` |br| ``+ flexible`` |br| ``+ maxiter=<int>`` |br| ``GMRES`` |br| ``+ flexible`` |br| ``+ maxiter=<int>`` |br| ``+ nVector=<int>`` |br|  ``+ iR``","Solve off |br| user-specified |br| CVODE solver (see :ref:`sec:cvodepars`) |br| Conjugate gradient solver. **Default solver for velocity and scalar equation** |br| **Default for scalar equation** |br| **Default velocity solver** |br| . |br| . |br| . |br| Generalized Minimal Residual solver. **Default solver for pressure** |br| **Default for pressure** |br| . |br| Dimension of Krylov space |br| Iterative refinment"
    ``residualTol``,"``<float>`` |br| ``+ relative=<float>``","absolute linear solver residual tolerance. Default = ``1e-4`` |br| use absolute/relative residual (whatever is reached first)"
    ``absoluteTol``,"``<float>``","absolute solver tolerance (for CVODE only) |br| Default = ``1e-6``"
    ``initialGuess``,"``previous`` |br| ``extrapolation`` |br| ``projection`` |br| ``projectionAconj`` |br| ``+ nVector=<int>``", ". |br| **Default for velocity and scalars** |br| . |br| Defaults for pressure |br| dimension of projection space"
@@ -293,7 +293,7 @@ NekNek Parameters
 
    ``boundaryEXTOrder``,``<int>``, "Boundary extrapolation order |br| Default = ``1``. >1 may require additional corrector steps"
    ``multirateTimeStepping``,"``true, false`` |br| ``+ correctorSteps=<int>``","Default = ``false`` |br| Outer corrector steps. Default is ``0``. Note: ``boundaryEXTOrder`` > 1 requires ``correctorSteps`` > 0 for stability"
-   
+
 
 .. _udf_functions:
 
@@ -359,33 +359,32 @@ and can be launched from UDF host code directly as a regular function.
 
 .. code-block:: cpp
 
+   // -------- Device side (inside the OKL block) --------
+   #ifdef __okl__
 
-  // -------- Device side (inside the OKL block) --------
-  #ifdef __okl__
+   @kernel void my_exact(const dlong Ntotal,
+                         @ restrict const dfloat *X,
+                         @ restrict dfloat *U)
+   {
+     for (dlong n = 0; n < Ntotal; ++n; @tile(p_blockSize, @outer, @inner)) {
+       if (n < Ntotal) {
+         U[n] = sin(X[n]);
+       }
+     }
+   }
 
-  @kernel void my_exact(const dlong Ntotal,
-                        @ restrict const dfloat *X,
-                        @ restrict dfloat *U)
-  {
-    for (dlong n = 0; n < Ntotal; ++n; @tile(p_blockSize, @outer, @inner)) {
-      if (n < Ntotal) {
-        U[n] = sin(X[n]);
-      }
-    }
-  }
+   #endif
 
-  #endif
-
-  // -------- Host side (UDF code) --------
-  {
-    auto mesh = nrs->meshV;
-    deviceMemory<dfloat> o_tmp(mesh->Nlocal);
-    my_exact(o_tmp.size(), mesh->o_x, o_tmp); // o_tmp = sin(x)
-  }
+   // -------- Host side (UDF code) --------
+   {
+     auto mesh = nrs->meshV;
+     deviceMemory<dfloat> o_tmp(mesh->Nlocal);
+     my_exact(o_tmp.size(), mesh->o_x, o_tmp); // o_tmp = sin(x)
+   }
 
 .. tip::
 
-  If the user-defined functions are sufficiently large, it is conventional practice to write them in a ``.oudf`` file which is included within the ``ifdef`` block instead of the functions in the ``.udf`` file, as follows:
+   If the user-defined functions are sufficiently large, it is conventional practice to write them in a ``.oudf`` file which is included within the ``ifdef`` block instead of the functions in the ``.udf`` file, as follows:
 
   .. code-block:: c++
 
@@ -397,10 +396,10 @@ and can be launched from UDF host code directly as a regular function.
 
 .. tip::
 
-  Many common operations are available in ``platform->linAlg`` and ``opSEM``
-  (e.g., fills, axpby, dot products, norms, gradient, divergence). Prefer these
-  utilities over writing custom kernels when possible. See :ref:`linalg` and
-  :ref:`opsem` for details.
+   Many common operations are available in ``platform->linAlg`` and ``opSEM``
+   (e.g., fills, axpby, dot products, norms, gradient, divergence). Prefer these
+   utilities over writing custom kernels when possible. See :ref:`linalg` and
+   :ref:`opsem` for details.
 
 .. _udf_setup0:
 
@@ -477,7 +476,7 @@ UDF_ExecuteStep
 
 ``UDF_ExecuteStep`` offers the most flexibility. It is called once just before
 time marching begins, and then once **per time step**. The routine receives the
-current time (``double t``) and the step index (``int tstep``). 
+current time (``double t``) and the step index (``int tstep``).
 Typical operations include:
 
 * Run time-averaging updates (see *TODO*)
@@ -493,96 +492,105 @@ Typical operations include:
 Legacy Nek5000 User File (.usr)
 --------------------------------
 
-*NekRS* provides an optional framework for legacy interface with the *Nek5000* code, allowing access to fortran 77 based *Nek5000* user routines to perform custom operations.
-The user has the option to include ``<case>.usr`` in the case directory to include the usual *Nek5000* user routines. 
-For users unfamiliar with *Nek5000* code, more information can be found in `Nek5000 documentation <https://nek5000.github.io/NekDoc/>`_.
-Note that not all *Nek5000* routines are called by *NekRS*. 
-More commonly, the user may require call to the ``userchk()`` routine in *Nek5000* for post-processing operations. 
-If required, it must be explicitly called from ``.udf`` file as shown below:
+NekRS includes an optional legacy interface to *Nek5000* so you can reuse
+Fortran-77 user routines. If ``<case>.usr`` is present in the case directory,
+the file is compiled and linked, though not all *Nek5000* user subroutines are
+invoked by NekRS.
+
+Many one-time setup routines are still honored so existing *Nek5000* settings can
+be carried over. Users can continually use subroutines
+``usrdat0``, ``usrdat``, ``usrdat2``, ``usrdat3``, ``usrsetvert`` and ``useric``
+to modify mesh geometry, tag boundary surfaces, adjust connectivity and set initial
+conditions.
+Compute intensive subroutines such as ``userbc``, ``userf``, ``userq`` and ``uservp``
+are **not** used by *NekRS*. Users need to convert them into UDF or OKL implementation.
+
+The ``userchk`` is **not** called automatically. If needed, call it manually
+from UDF (e.g., ``UDF_ExecuteStep``) for post-processing or other setup tasks,
+for example:
 
 .. code-block:: c++
 
    void UDF_ExecuteStep(double time, int tstep)
    {
-     if(nrs->checkpointStep) {
-        nrs->copyToNek(time, tstep);
-        nek::userchk();
+     if(nrs->checkpointStep) { // occasionally call when a checkpoint step
+        nrs->copyToNek(time, tstep); // push device field to Nek5000 arrays
+        nek::userchk();              // call userchk in .usr
+        nrs->copyFromNek(time);      // only if userchk modify solutions
      }
    }
 
-For most applications, the ``userchk`` routine will be called from ``UDF_ExecuteStep`` function, likely for post-processing operations.
-``nrs->copyToNek`` copies all solution fields from :term:`OCCA` arrays to *Nek5000* (fortran) arrays. 
-This call is necessary before calling ``nek::userchk`` in order for the user to perform any post-processing on field arrays in *Nek5000*.
+.. note::
 
-.. warning::
+   - ``nrs->copyToNek`` copies all solution fields from :term:`OCCA` device arrays
+     to *Nek5000* (Fortran) host arrays. Use it only when ``nek::userchk``
+     needs current solutions.
+   - This transfer is expensive. Wrap the call under a suitable condition to
+     avoid excessive overhead.
+   - Call ``nrs->copyFromNek`` only if the legacy routine modifies solution
+     data that must be synchronized back to the device.
 
-   The ``nrs->copyToNek`` call performs expensive operation of copying the data from :term:`OCCA` arrays to Nek5000.
-   This must be done sparingly, only at certain time steps in the simulation.
-   Remember to call this routine within suitable ``if`` condition block.
-   As shown in the example above, ``nrs->copyToNek`` and ``nek::userchk`` are called only at ``checkPointStep``.
-
-Details on *Nek5000* ``.usr`` file can be found `here <https://nek5000.github.io/NekDoc/problem_setup/usr_file.html#user-routines-file-usr>`_ and specific information on ``userchk`` fortran routine `here <https://nek5000.github.io/NekDoc/problem_setup/usr_file.html#userchk>`_.
-
-Other *Nek5000* user routines that are internally called by *NekRS* during initialization are ``usrdat0``, ``usrdat``, ``usrdat2`` and ``usrdat3``.
-Details on these initialization routines can be found `here <https://nek5000.github.io/NekDoc/problem_setup/usr_file.html#initialization-routines>`_.
-These routines can be optionally used for specifying boundary conditions, mesh manipulation, parameter specification or other initialization operations. 
+For background on Nek5000, see the `Nek5000 documentation <https://nek5000.github.io/NekDoc/>`_.
+Details on these initialization routines are documented `here <https://nek5000.github.io/NekDoc/problem_setup/usr_file.html#initialization-routines>`_.
+To migrate a case, follow the *TODO* tutorial to converting a *Nek5000* case to
+*NekRS*.
+In this section, we focus one the interface for referencing variables between
+``.udf`` and ``.usr``.
 
 Legacy Data Interface
 """""""""""""""""""""
 
-*NekRS* provides an in-built mechanism to pass variables or array pointers to share data between *Nek5000* and *NekRS* through ``nekrs_registerPtr`` fortran routine.
-Consider the following code snippet in ``.usr`` file:
+NekRS does not “send” values or arrays to *Nek5000*. Instead, it shares them by
+**registering pointers**. On the Fortran side, any variable or array you expose
+must have a stable address, so put it in a ``COMMON`` block or give it the
+``SAVE`` attribute.
+Use the Fortran routine ``nekrs_registerPtr`` to register variables/arrays so
+NekRS can reference them by a string key.
+
+Here is an example ``.usr`` file:
 
 .. code-block:: fortran
 
-   subroutine userchk()
-   include 'SIZE'
-   include 'TOTAL'
+   c-----------------------------------------------------------------------
+         subroutine usrdat0
+         real gamma
+         save gamma
 
-   common /exact/ uexact(lx1,ly1,lz1,lelt*3),
-  &               texact(lx1,ly1,lz1,lelt) 
+         gamma = 1.4
 
-   real uexact, texact
+         call nekrs_registerPtr('gamma', gamma)
 
-   call computeexact(uexact, texact)
+         return
+         end
+   c-----------------------------------------------------------------------
+         subroutine userchk()
+         include 'SIZE'
+         include 'TOTAL'
 
-   call nekrs_registerPtr('uexact', uexact)
-   call nekrs_registerPtr('texact', texact)
+         common /exact/ uexact(lx1,ly1,lz1,lelt*3),
+        &               texact(lx1,ly1,lz1,lelt)
 
-   return
-   end
+         real uexact, texact
 
-   subroutine computeexact(uexact, texact)
-   include 'SIZE'
-   include 'TOTAL'
+         call nekrs_registerPtr('uexact', uexact(1,1,1,1,1))
+         call nekrs_registerPtr('vexact', uexact(1,1,1,1,2))
+         call nekrs_registerPtr('wexact', uexact(1,1,1,1,3))
+         call nekrs_registerPtr('texact', texact)
 
-   ! Code to compute exact solution
+         ! update uexact/texact here
 
-   return
-   end
+         return
+         end
 
-   subroutine usrdat0
+In this example, ``COMMON /exact/`` block holds two arrays store exact solutions
+(e.g., velocity and temperature). We register the **first-element addresses** of
+each velocity components and of temperature with ``nekrs_registerPtr`` inside
+``userchk``. The scalar ``gamma`` is registered in ``usrdat0`` and kept alive
+with ``SAVE``. Any data you register must be in a ``COMMON`` block or ``SAVE``
+so its address remains valid.
 
-   real gamma 
-   save gamma
-
-   gamma = 1.4
-
-   call nekrs_registerPtr('gamma', gamma)
-
-   return
-   end
-
-In the above code, two routines are defined in the fortran common block ``exact`` to store exact solution for velocity and temperature.
-The exact solutions are computed in ``userchk`` and the array pointers for the solutions are registered using ``nekrs_registerPtr`` subroutine.
-It takes two arguments - a string identifier for the pointer and the pointer to the array to be registered. 
-(Note that pointer to the first memory location in the array is registered).
-It is critical that these arrays are declared in fortran common block or that they are saved for them to be visible globally.
-Another example is shown with a variable, ``gamma``, in ``usrdat0`` routine, which is also registered in a similar manner.
-Note that the variable ``gamma`` is made static (or saved in memory) using the ``save`` command. 
-
-These pointers can now be accessed in ``.udf`` file and used to transfer data between *NekRS* and *Nek5000*.
-Example usage in ``.udf`` is shown below:
+These pointers can then be looked up in the ``.udf`` and used to exchange data
+between *NekRS* and *Nek5000*. Example usage in ``.udf``:
 
 .. code-block:: c++
 
@@ -590,40 +598,92 @@ Example usage in ``.udf`` is shown below:
 
    void UDF_Setup0(MPI_Comm comm, setupAide &options)
    {
-      gamma = *nek::ptr<double>("gamma"); 
+     gamma = *nek::ptr<double>("gamma");
    }
 
    void UDF_LoadKernels(deviceKernelProperties& kernelInfo)
    {
-      kernelInfo.define("p_GAMMA") = gamma;
+     kernelInfo.define("p_GAMMA") = gamma;
    }
 
    void UDF_ExecuteStep(double time, int tstep)
    {
-      if(nrs->lastStep) {
-        auto mesh = nrs->meshV;
+     if (nrs->lastStep) {
+       auto mesh = nrs->meshV;
+       auto Nlocal = mesh->Nlocal;
 
-        nek::userchk();
+       nek::userchk(); // compute exact solutions in .usr
 
-        std::vector<double> uexact(nek::ptr<double>("uexact"), nek::ptr<double>("uexact") + nrs->fluid->fieldOffsetSum);
-        std::vector<double> texact(nek::ptr<double>("texact"), nek::ptr<double>("texact") + mesh->Nlocal);
+       // Host pointers exported from usr
+       auto *u_ex = nek::ptr<double>("uexact");
+       auto *v_ex = nek::ptr<double>("vexact");
+       auto *w_ex = nek::ptr<double>("wexact");
 
-        auto o_uexact = platform->device.malloc<dfloat>(nrs->fluid->fieldOffsetSum);
-        auto o_texact = platform->device.malloc<dfloat>(nrs->fluid->fieldOffset);
+       // Range constructor (copy values into std::vector)
+       std::vector<double> t_ex(nek::ptr<double>("texact"),
+                                nek::ptr<double>("texact") + Nlocal);
 
-        o_uexact.copyFrom(uexact);
-        o_texact.copyFrom(texact);
+       // Host buffer
+       std::vector<dfloat> uexact(Nlocal), uexact(Nlocal), wexact(Nlocal), texact(Nlocal);
 
-        //compute error here...
-      }
+       // Convert from double to dfloat
+       for (int i = 0; i < Nlocal; i++) {
+         u_exact[i] = static_cast<dfloat>(u_ex[i]);
+         v_exact[i] = static_cast<dfloat>(v_ex[i]);
+         w_exact[i] = static_cast<dfloat>(w_ex[i]);
+         t_exact[i] = static_cast<dfloat>(t_ex[i]);
+       }
+
+       // Device buffer
+       auto o_uexact = platform->device.malloc<dfloat>(nrs->fluid->fieldOffsetSum);
+       auto o_texact = platform->device.malloc<dfloat>(Nlocal);
+
+       // copyFrom(src pointer, count, dest offset, src offset)
+       o_uexact.copyFrom(uexact.data(), Nlocal, 0 * nrs->fluid->fieldOffset, 0);
+       o_uexact.copyFrom(vexact.data(), Nlocal, 1 * nrs->fluid->fieldOffset, 0);
+       o_uexact.copyFrom(wexact.data(), Nlocal, 2 * nrs->fluid->fieldOffset, 0);
+       o_texact.copyFrom(texact.data(), Nlocal);
+
+       //compute error here...
+     }
    }
 
-As shown, ``nek::ptr`` stores the registered pointers, which is recognised using the string identifier specified in ``.usr`` file.  
-In ``UDF_Setup0`` the value referenced by the pointer corresponding to ``gamma`` is assigned to the C++ static variable of the same name.
-It is later used to define a kernel macro in ``UDF_LoadKernels`` as shown.
-Similarly, the pointers to fortran arrays identified by ``uexact`` and ``texact`` are used to copy data onto ``std::vector`` containers of the same name.
-The arrays are then copied from ``std::vector`` containers to :term:`OCCA` arrays ``o_uexact`` and ``o_texact``.
-The user can then perform any required operations on these arrays, such as compute solution error norms.
+As shown, ``nek::ptr`` returns the registered pointers by the string keys
+defined in the ``.usr`` file. In ``UDF_Setup0``, the value referenced by
+``gamma`` is read into a C++ static and later exported as a device macro in
+``UDF_LoadKernels``.
+
+For the arrays (``uexact``, ``vexact``, ``wexact``, ``texact``), we show two ways:
+use a raw host pointer from ``nek::ptr<double>(...)`` for velocity components
+and use a range constructor to make a copy into ``std::vector`` for temperature.
+Then, all are converted from ``double`` to ``dfloat`` before copying to
+:term:`OCCA` arrays.
+
+.. note::
+
+   *NekRS* compiles Fortran ``real`` as ``real*8`` (i.e., C++ ``double``).
+   In *NekRS*, ``dfloat`` may be ``double`` (default) or ``float`` (FP32 mode).
+   Converting on the host as shown works for both settings. If you always run in
+   FP64, you can skip the cast. Alternatively, you can convert on device via
+   ``platform->copyDoubleToDfloatKernel``.
+
+.. note::
+
+   **Nek5000/NekRS sizes and offsets**
+
+   - ``mesh->Nlocal``: number of local points on this rank
+     (e.g., ``lx1*ly1*lz1*nelv``; fluid+solid mesh uses``nelt``).
+
+   - ``fieldOffset``: padded device stride (alignment + max local size).
+     It is **not** equal to ``lx1*ly1*lz1*lelv``.
+
+   - ``fieldOffsetSum``: sum of component strides. |br|
+     For velocity: ``fieldOffsetSum = 3 * fieldOffset``. |br|
+     For scalar, ``fieldOffsetSum = nrs->Nscalar * fieldOffset``.
+
+   Use ``fieldOffset``/``fieldOffsetSum`` for declaring multi-component device
+   arrays and indexing. Use ``Nlocal`` for loop lengths and buffer sizes.
+
 
 Mesh File (.re2)
 ----------------
@@ -701,8 +761,8 @@ equal the total MPI ranks requested. Here is the ``eddyNekNek.sess`` example:
    inside/inside:1;
    outside/outside:1;
 
-.. tip::                                                                        
-                                                                                
+.. tip::
+
    Using a subfolder per case is optional but recommended. On HPC systems, try
    to size each session in units of a node. For example, if a node has 4 GPUs,
    it’s often best to make each session’s MPI ranks a multiple of 4.
