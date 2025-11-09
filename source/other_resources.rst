@@ -6,7 +6,7 @@ Other Resources
 .. _linalg:
 
 Linear Algebra Functions (linAlg)
---------------------------------
+---------------------------------
 
 
 .. _opsem:
