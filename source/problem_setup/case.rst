@@ -305,7 +305,8 @@ time stepping, letting a case customize behavior without touching core code.
 Typical uses include setting initial and boundary conditions, defining custom
 materials, models, and source terms, and performing sampling and logging for
 post-processing. The available entry-point functions and their typical uses are
-as follows.
+as follows. All UDF functions are **optional**. If a function is not provided,
+NekRS uses a default no-op version.
 
 .. _okl_block:
 
@@ -440,42 +441,52 @@ convenience helper ``platform->par->extract``. The value is stored in a global
 UDF_LoadKernels
 """""""""""""""
 
-As shown in the example above, ``UDF_LoadKernels`` is primarily used in the ``.udf`` file to append preprocessor macros (global directives) to kernel files.
-It takes an argument ``deviceKernelProperties& kernelInfo`` which stores the metadata for kernel compilation.
-``kernelInfo.define`` function is used to define the kernel macros and these can later be used in any of the kernel functions.
+As shown in the example above, ``UDF_LoadKernels`` is primarily used to attach
+preprocessor macros (global defines) for device kernels.
+It takes ``deviceKernelProperties& kernelInfo`` which holds compilation metadata.
+Using ``kernelInfo.define("NAME") = value`` to expose constants to :term:`OKL`.
+
+.. tip::
+
+   For constants passed to device code (via ``UDF_LoadKernels``), it’s recommended
+   to use a ``p_`` prefix (e.g., ``p_gamma``, ``p_Pr``, ``p_Re``) for clarity and
+   consistency.
 
 UDF_Setup
 """""""""
 
-The ``UDF_Setup`` function is called once at the beginning of the simulation *after* initializing the mesh arrays, solution arrays, material property arrays, and boundary field mappings. 
-It is typically the function in ``.udf`` the user will interact with the most. 
+``UDF_Setup`` is called once at the beginning of the simulation *after* *nekRS*
+initializing the mesh, solution fields, material properties, and boundary mappings.
+It is typically the ``.udf`` function users will use most to overwrite defaults
+and customize settings.
 Various operations are performed within this routine, including, but not limited to:
 
 * Assign initial conditions (see :ref:`initial_conditions`).
 * Mesh manipulation (see :ref:`tutorial_rans` tutorial).
-* Assign function pointers to user-defined spatially varying material properties (see :ref:`properties`).
-* Assign function pointers to user-defined source terms (see :ref:`source_terms`).
-* Initialize and setup RANS turbulence models (see :ref:`ktau_model`)
-* Initialize and setup Low-Mach compressible model (see :ref:`lowmach_model`)
-* Initialize solution recyling routines and arrays (see :ref:`recycling`)
-* Allocate ``bc->o_usrwrk`` array for assigning user-defined boundary conditions (see *TODO*)
-* Initialize time averaging routines and arrays (see *TODO*)
+* Register function pointers for user-defined spatially varying material properties (see :ref:`properties`).
+* Register function pointers for user-defined source terms (see :ref:`source_terms`).
+* Initialize and set up RANS turbulence models (see :ref:`ktau_model`)
+* Initialize and set up the Low-Mach compressible model (see :ref:`lowmach_model`)
+* Initialize solution recycling routines and arrays (see :ref:`recycling`)
+* Allocate ``bc->o_usrwrk`` for user-defined boundary data (see *TODO*)
+* Initialize time-averaging routines and buffers (see *TODO*)
 
 
 UDF_ExecuteStep
 """""""""""""""
 
-This user-defined function provides the most flexibility of all the *NekRS* user-defined functions.
-It is called once at the start of the simulation just before beginning the time stepping, and then once per time step after running each step.
-Two arguments are passed to this routine, including current time (``double``) and timestep (``int``).
-Various operations are performed within this routine, including, but not limited to:
+``UDF_ExecuteStep`` offers the most flexibility. It is called once just before
+time marching begins, and then once **per time step**. The routine receives the
+current time (``double t``) and the step index (``int tstep``). 
+Typical operations include:
 
-* Call time averaging routines (see *TODO*).
-* Call solution recycling routines (see :ref:`recycling`).
-* Various post-processing operations:
+* Run time-averaging updates (see *TODO*)
+* Invoke solution recycling logic (see :ref:`recycling`).
+* Post-processing tasks, such as:
 
   * Extracting data over a line (see :ref:`extract_line`).
-  * Write custom field files (see *TODO*)
+  * Writing custom field files (*TODO*).
+
 
 .. _usr_functions:
 
