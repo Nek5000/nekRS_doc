@@ -46,6 +46,10 @@ extensions = ["sphinx.ext.mathjax",
               "sphinx.ext.githubpages", 
               "sphinx_mdinclude",
               "sphinx_tabs.tabs"]
+
+# Suppress Pygments “highlighting failure” warnings
+suppress_warnings = ['misc.highlighting_failure']
+
 numfig = True
 
 # Add any paths that contain templates here, relative to this directory.
