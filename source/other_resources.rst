@@ -3,10 +3,22 @@
 Other Resources
 ===============
 
-.. _scripts:
+.. _linalg:
 
-Building the Nek5000 Tool Scripts
----------------------------------
+Linear Algebra Functions (linAlg)
+--------------------------------
+
+
+.. _opsem:
+
+SEM operators (opSEM)
+---------------------
+
+
+.. _nek5000_tools:
+
+Building the Nek5000 Tools
+--------------------------
 
 *NekRS* does not package the legacy toolkit available with :term:`Nek5000`, e.g., tools for creating or adapting meshes.
 It relies instead on the toolbox available with :term:`Nek5000`, which must be installed separately.
@@ -36,3 +48,4 @@ Additional information about *Nek5000* tools can be found `here <https://nek5000
   The `genbox <https://nek5000.github.io/NekDoc/tools/genbox.html>`_ tool creates simple 2D and 3D meshes that can be used for both *Nek5000* and *NekRS* simulations. 
   For *NekRS* applications, this is most likely the only tool that be of use to most users. 
   Other *Nek5000* tools will be rarely used.
+

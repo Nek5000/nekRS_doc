@@ -22,7 +22,7 @@ The boundary conditions are also shown below:
    :language: none
    :lines: 1-3, 154-182
 
-Assigning boundary condition types in *NekRS* is handled differently depending on if you are using a third-party meshing tool such as *GMSH*, *ICEM*, *Cubit*, etc. and importing the mesh with *Nek5000* :ref:`tool scripts <scripts>`, such as ``gmsh2nek``, ``exo2nek`` or ``cgns2nek``, or if you are using a mesh generated with a Nek-native tool, such as `Genbox <https://nek5000.github.io/NekDoc/tools/genbox.html?highlight=genbox>`_.
+Assigning boundary condition types in *NekRS* is handled differently depending on if you are using a third-party meshing tool such as *GMSH*, *ICEM*, *Cubit*, etc. and importing the mesh with *Nek5000* :ref:`tool scripts <nek5000_tools>`, such as ``gmsh2nek``, ``exo2nek`` or ``cgns2nek``, or if you are using a mesh generated with a Nek-native tool, such as `Genbox <https://nek5000.github.io/NekDoc/tools/genbox.html?highlight=genbox>`_.
 
 Boundary conditions are typically assigned in the :ref:`Parameter file <parameter_file>`.
 To setup cases that use third party meshes, where boundaries are identified by a unique integer or boundary ID, you will need to use the ``boundaryIDMap`` parameter in the ``MESH`` section to identify the mesh boundaries, which are then mapped to the desired boundary condition in field section using the ``boundaryTypeMap`` key.
