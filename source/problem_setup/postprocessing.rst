@@ -8,7 +8,7 @@ Postprocessing
 Once a case has been setup correctly so it can be run without errors, you may want 
 to modify the postprocessing to of the simulation output. By default, NekRS will
 output a basic set of data according to frequency set in the ``writeInterval`` of
-the :ref:`parameter_file` which can subsequently be viewed through a visualization
+the :ref:`par_file` which can subsequently be viewed through a visualization
 tool such as Paraview or Visit. However, additional data or derived values can
 be extracted by setting up User Defined outputs using the ``UDF_ExecuteStep``
 function of the ``.udf`` file.
@@ -74,7 +74,7 @@ Legacy Averaging Method
 
 When running a high fidelity case with DNS or LES turbulence models, it is often necessary to time-average the solution fields to extract meaningful quantities.
 This may sometimes even be useful for a RANS case as well.
-*NekRS* provides in-built routines that can be embedded in :ref:`udf_functions` to do run-time averaging and write relevant field files. 
+*NekRS* provides in-built routines that can be embedded in :ref:`udf_file` to do run-time averaging and write relevant field files. 
 These are included in ``tavg`` plugin and made available in ``udf`` file by including the ``tavg.hpp`` header file at the top of ``.udf``.
 The minimal structure in ``.udf`` for performing time averaging is as follows:
 

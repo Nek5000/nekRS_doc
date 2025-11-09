@@ -23,7 +23,7 @@ Below are the command line options/argument that can be used to further modifiy 
    :widths: 20,40,40,10
    :header: Command line argument, Options, Description,Required
 
-   ``--help``,"None |br| ``par`` |br| ``env``", "Prints summary of available command line arguments |br| Prints summary of :ref:`Parameter file <parameter_file>` sections and keys |br| Prints list of *NekRS* enviorenment variables","No"
+   ``--help``,"None |br| ``par`` |br| ``env``", "Prints summary of available command line arguments |br| Prints summary of :ref:`Parameter file <par_file>` sections and keys |br| Prints list of *NekRS* enviorenment variables","No"
    ``--setup``,``par`` file |br| ``sess`` file, "Name of ``.par`` file of the case |br| Name of ``.sess`` file (NekNek)","Yes"
    ``--build-only``,"None |br| ``#procs``","Runs JIT compilation for ``np`` procs |br| Runs JIT compilation for specified number of processors","No"
    ``--cimode``,"``<id>``","Runs *NekRS* in CI mode corresponding to specified ``<id>``","No"

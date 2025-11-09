@@ -4,7 +4,8 @@ Case files
 ==========
 
 NekRS simulation requires a number of case definition files which are described in this page.
-An overview of these are presented in the image below .
+An overview of these are presented in the image below.
+See also :ref:`file_extensions` for summarized tables.
 
 .. _fig:case_overview:
 
@@ -32,7 +33,7 @@ Optionally, the user can also define the names of ``.udf``, ``.oudf`` and ``.usr
 The following sections describe the structure and syntax for each of these files for a general case.
 
 
-.. _parameter_file:
+.. _par_file:
 
 Parameter File (.par)
 ---------------------
@@ -44,6 +45,10 @@ Parameter File (.par)
    .. code-block:: bash
 
       nrsman par
+
+.. warning::
+
+   *nekRS* ``.par`` file is not compatible to *Nek5000* ``.par`` file.
 
 Most information about the problem setup is defined in the parameter (``.par``) file.
 This file is organized in a number of **sections**, each with a number of **keys**.
@@ -295,7 +300,7 @@ NekNek Parameters
    ``multirateTimeStepping``,"``true, false`` |br| ``+ correctorSteps=<int>``","Default = ``false`` |br| Outer corrector steps. Default is ``0``. Note: ``boundaryEXTOrder`` > 1 requires ``correctorSteps`` > 0 for stability"
 
 
-.. _udf_functions:
+.. _udf_file:
 
 User-Defined Host File (.udf)
 -----------------------------
@@ -487,7 +492,7 @@ Typical operations include:
   * Writing custom field files (*TODO*).
 
 
-.. _usr_functions:
+.. _usr_file:
 
 Legacy Nek5000 User File (.usr)
 --------------------------------
@@ -672,7 +677,7 @@ Then, all are converted from ``double`` to ``dfloat`` before copying to
    **Nek5000/NekRS sizes and offsets**
 
    - ``mesh->Nlocal``: number of local points on this rank
-     (e.g., ``lx1*ly1*lz1*nelv``; fluid+solid mesh uses``nelt``).
+     (e.g., ``lx1*ly1*lz1*nelv``; fluid+solid mesh uses ``nelt``).
 
    - ``fieldOffset``: padded device stride (alignment + max local size).
      It is **not** equal to ``lx1*ly1*lz1*lelv``.
@@ -684,6 +689,7 @@ Then, all are converted from ``double`` to ``dfloat`` before copying to
    Use ``fieldOffset``/``fieldOffsetSum`` for declaring multi-component device
    arrays and indexing. Use ``Nlocal`` for loop lengths and buffer sizes.
 
+.. _re2_file:
 
 Mesh File (.re2)
 ----------------
@@ -738,12 +744,12 @@ nekRS requires that the flow mesh be a subset of the heat transfer mesh. In othe
 the flow mesh always has less than (or equal to, for cases without conjugate heat transfer)
 the number of elements in the heat transfer mesh. Creating a mesh for conjugate heat
 transfer problems requires additional pre-processing steps that are described in the
-:ref:`Creating a Mesh for Conjugate Heat Tranfser <cht_mesh>` section. The remainder
+:ref:`Creating a Mesh for Conjugate Heat Tranfser <meshing_cht>` section. The remainder
 of this section describes how to generate a mesh in ``.re2`` format, assuming
 any pre-processing steps have been done for the special cases of conjugate heat transfer.
 
 
-.. _session_file:
+.. _sess_file:
 
 NekNek Session File (.sess)
 ---------------------------
@@ -768,7 +774,7 @@ equal the total MPI ranks requested. Here is the ``eddyNekNek.sess`` example:
    it’s often best to make each session’s MPI ranks a multiple of 4.
 
 
-.. _trigger_file:
+.. _upd_file:
 
 Trigger Files (.upd)
 --------------------

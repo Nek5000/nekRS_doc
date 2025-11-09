@@ -3,7 +3,7 @@
 Boundary conditions
 ===================
 
-Boundary conditions for each mesh boundary should normally be set in the :ref:`parameter_file`, using the ``boundaryTypeMap`` parameter.
+Boundary conditions for each mesh boundary should normally be set in the :ref:`par_file`, using the ``boundaryTypeMap`` parameter.
 This is used within the ``FLUID VELOCITY`` or ``SCALAR FOO`` sections to set the boundary conditions of the respective fields.
 
 Available Types
@@ -24,7 +24,7 @@ The boundary conditions are also shown below:
 
 Assigning boundary condition types in *NekRS* is handled differently depending on if you are using a third-party meshing tool such as *GMSH*, *ICEM*, *Cubit*, etc. and importing the mesh with *Nek5000* :ref:`tool scripts <nek5000_tools>`, such as ``gmsh2nek``, ``exo2nek`` or ``cgns2nek``, or if you are using a mesh generated with a Nek-native tool, such as `Genbox <https://nek5000.github.io/NekDoc/tools/genbox.html?highlight=genbox>`_.
 
-Boundary conditions are typically assigned in the :ref:`Parameter file <parameter_file>`.
+Boundary conditions are typically assigned in the :ref:`Parameter file <par_file>`.
 To setup cases that use third party meshes, where boundaries are identified by a unique integer or boundary ID, you will need to use the ``boundaryIDMap`` parameter in the ``MESH`` section to identify the mesh boundaries, which are then mapped to the desired boundary condition in field section using the ``boundaryTypeMap`` key.
 As an example, consider an inlet-outlet pipe flow, where three boundary conditions are applied to the mesh boundary IDs 389 (``udfDirichlet`` - inlet), 231 (``zeroNeumann`` - outlet), 4 (``zeroDirichlet`` - walls).
 The corresponding boundary condition assignment in ``.par`` file will be as follows,
@@ -155,7 +155,7 @@ The string field identifiers are:
 
 .. note::
 
-    The scalar field string identifiers are declared in :ref:`Parameter file <parameter_file>` under the :ref:`General Section<sec:generalpars>`.
+    The scalar field string identifiers are declared in :ref:`Parameter file <par_file>` under the :ref:`General Section<sec:generalpars>`.
 
 The boundary condition types that require inclusion of user defined functions in ``.udf`` file are shown in the following table:
 

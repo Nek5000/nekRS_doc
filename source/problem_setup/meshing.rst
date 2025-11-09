@@ -112,6 +112,8 @@ This tool can also create a conjugate heat transfer mesh using two conformal mes
 further information on setting up sidesets and boundary conditions, see the section on `applying boundary conditions <Sidesets and applying boundary conditions>`__
 
 
+.. _meshing_cht:
+
 Conjugate Heat Transfer
 -----------------------
 
@@ -199,40 +201,41 @@ the ``mesh`` object, without any differentiation between whether that ``mesh`` o
 ``nrs`` or ``nrs->cds``.
 
 .. table:: Important ``mesh_t`` members
-  :name:  mesh_data
-================== ============================ ================== =================================================
-Variable Name      Size                         Host or Device?           Meaning
-================== ============================ ================== =================================================
-``comm``           1                            Host               MPI communicator
-``device``         1                            Host               backend device
-``dim``            1                            Host               spatial dimension of mesh
-``elementInfo``    ``Nelements``                Host               phase of element (0 = fluid, 1 = solid)
-``EToB``           ``Nelements * Nfaces``       Both               mapping of elements to type of boundary condition
-``N``              1                            Host               polynomial order for each dimension
-``NboundaryFaces`` 1                            Host               *total* number of faces on a boundary (rank sum)
-``Nelements``      1                            Host               number of local elements owned by current process
-``Nfaces``         1                            Host               number of faces per element
-``Nfp``            1                            Host               number of quadrature points per face
-``Np``             1                            Host               number of quadrature points per element
-``rank``           1                            Host               parallel process rank
-``size``           1                            Host               size of MPI communicator
-``Nfields``        1                            Host               Number of fields passed to the PDE solver
-``cht``            1                            Host               conjugate heat transfer status (0 = off, 1 = on)
-``vmapM``          ``Nelements * Nfaces * Nfp`` Both               quadrature point index for faces on boundaries
-``x``              ``Nelements * Np``           Both               :math:`x`-coordinates of physical quadrature points
-``y``              ``Nelements * Np``           Both               :math:`y`-coordinates of physical quadrature points
-``z``              ``Nelements * Np``           Both               :math:`z`-coordinates of physical quadrature points
-``Nvgeo``          ``<chk>``                    <chk>              Volumetric geometric factors
-``Nggeo``          ``<chk>``                    <chk>              Second-order volumetric geometric factors
-``vertexNodes``    ``<chk>``                    <chk>              Vertex nodes' indices
-``edgeNodes``      ``<chk>``                    <chk>              Edge nodes' indices
-``edgeNodes``      ``<chk>``                    <chk>              List of element reference interpolation nodes on element faces
-``o_LMM``          ``<chk>``                    Device             Lumped mass matrix
-``U``              ``Nelements*Np``             Both               Mesh velocity (often used with ALE solver)
-``D``              ``Nelements*Np``             Both               1D Differentiation matrix
-``o_vgeo``         ``<chk>``                    Device             Volume geometric factors
-``o_sgeo``         ``<chk>``                    Device             Surface geometric factors
-================== ============================ ================== =================================================
+   :name:  mesh_data
+
+   ================== ============================ ================== =================================================
+   Variable Name      Size                         Host or Device?           Meaning
+   ================== ============================ ================== =================================================
+   ``comm``           1                            Host               MPI communicator
+   ``device``         1                            Host               backend device
+   ``dim``            1                            Host               spatial dimension of mesh
+   ``elementInfo``    ``Nelements``                Host               phase of element (0 = fluid, 1 = solid)
+   ``EToB``           ``Nelements * Nfaces``       Both               mapping of elements to type of boundary condition
+   ``N``              1                            Host               polynomial order for each dimension
+   ``NboundaryFaces`` 1                            Host               *total* number of faces on a boundary (rank sum)
+   ``Nelements``      1                            Host               number of local elements owned by current process
+   ``Nfaces``         1                            Host               number of faces per element
+   ``Nfp``            1                            Host               number of quadrature points per face
+   ``Np``             1                            Host               number of quadrature points per element
+   ``rank``           1                            Host               parallel process rank
+   ``size``           1                            Host               size of MPI communicator
+   ``Nfields``        1                            Host               Number of fields passed to the PDE solver
+   ``cht``            1                            Host               conjugate heat transfer status (0 = off, 1 = on)
+   ``vmapM``          ``Nelements * Nfaces * Nfp`` Both               quadrature point index for faces on boundaries
+   ``x``              ``Nelements * Np``           Both               :math:`x`-coordinates of physical quadrature points
+   ``y``              ``Nelements * Np``           Both               :math:`y`-coordinates of physical quadrature points
+   ``z``              ``Nelements * Np``           Both               :math:`z`-coordinates of physical quadrature points
+   ``Nvgeo``          ``<chk>``                    <chk>              Volumetric geometric factors
+   ``Nggeo``          ``<chk>``                    <chk>              Second-order volumetric geometric factors
+   ``vertexNodes``    ``<chk>``                    <chk>              Vertex nodes' indices
+   ``edgeNodes``      ``<chk>``                    <chk>              Edge nodes' indices
+   ``edgeNodes``      ``<chk>``                    <chk>              List of element reference interpolation nodes on element faces
+   ``o_LMM``          ``<chk>``                    Device             Lumped mass matrix
+   ``U``              ``Nelements*Np``             Both               Mesh velocity (often used with ALE solver)
+   ``D``              ``Nelements*Np``             Both               1D Differentiation matrix
+   ``o_vgeo``         ``<chk>``                    Device             Volume geometric factors
+   ``o_sgeo``         ``<chk>``                    Device             Surface geometric factors
+   ================== ============================ ================== =================================================
 
 
 The second most important structure is ``bcData``. It is often referred to in the ``oudf`` kernels to set boundary conditions.
@@ -241,26 +244,26 @@ on a given boundary, setting these values appropriately for each point. The foll
 of this structure mean.
 
 .. table:: Important ``bcData`` members
-  :name:  bcData_members
+   :name:  bcData_members
 
-===================== =======================================================
-Variable Name                Meaning
-===================== =======================================================
-``idM``                Element's mesh ID (?)
-``fieldOffset``        Size of a field (offset for a given component)
-``id``                 Sideset ID
-``time``               Current time
-''x/y/z``              X/Y/Z coordinates
-``nx/ny/nz``           X/Y/Z normals
-``t1x/t1y/t1z``        X/Y/Z tangents
-``t2x/t2y/t2z``        X/Y/Z bitangents
-``p/u/v/w``            Pressure and the 3 velocity components
-``scalarID``           ID of the scalar as per the ``par`` file 
-``s``                  Scalar value
-``flux``               Flux value for flux BC
-``meshu/meshv/meshw``  Mesh velocity components (used in ALE framework)
-``trans/diff``         Mesh transport/diffusion coefficients (ALE framework)
-===================== =======================================================
+   ===================== =======================================================
+   Variable Name                Meaning
+   ===================== =======================================================
+   ``idM``                Element's mesh ID (?)
+   ``fieldOffset``        Size of a field (offset for a given component)
+   ``id``                 Sideset ID
+   ``time``               Current time
+   ''x/y/z``              X/Y/Z coordinates
+   ``nx/ny/nz``           X/Y/Z normals
+   ``t1x/t1y/t1z``        X/Y/Z tangents
+   ``t2x/t2y/t2z``        X/Y/Z bitangents
+   ``p/u/v/w``            Pressure and the 3 velocity components
+   ``scalarID``           ID of the scalar as per the ``par`` file
+   ``s``                  Scalar value
+   ``flux``               Flux value for flux BC
+   ``meshu/meshv/meshw``  Mesh velocity components (used in ALE framework)
+   ``trans/diff``         Mesh transport/diffusion coefficients (ALE framework)
+   ===================== =======================================================
 
 
 

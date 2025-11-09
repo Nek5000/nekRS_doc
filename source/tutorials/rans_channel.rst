@@ -34,7 +34,7 @@ The mesh is further modified in the ``.udf`` file to refine it near the wall to 
 Control Parameters (.par file)
 ..............................
 
-Details of the structure of the parameter file can be found :ref:`here <parameter_file>`. 
+Details of the structure of the parameter file can be found :ref:`here <par_file>`.
 The parameter file for this case is as follows,
 
 .. literalinclude:: ktauTutorial/channel.par

@@ -6,8 +6,8 @@ Physical properties
 Constant Properties
 -------------------
 
-Constant physical properties, including transport and diffusion coefficients, for all equations are specified in the :ref:`Parameter file <parameter_file>` under respective :ref:`field sections <sec:field_settings>`.
-Consider the following template for a :ref:`non-dimensional <_nondimensional_eqs>` case setup:
+Constant physical properties, including transport and diffusion coefficients, for all equations are specified in the :ref:`Parameter file <par_file>` under respective :ref:`field sections <sec:field_settings>`.
+Consider the following template for a :ref:`non-dimensional <nondimensional_eqs>` case setup:
 
 .. code-block::
 
@@ -42,7 +42,7 @@ For the case where ``FOO`` is temperature field, the transport coefficient is th
 Conjugate Heat Transfer Setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For :ref:`conjugate heat transfer <conjugate_heat_transfer>` cases *NekRS* provides a convenient way of defining both fluid and solid properties for the temperature equation in the :ref:`Parameter file <parameter_file>` as shown,
+For :ref:`conjugate heat transfer <conjugate_heat_transfer>` cases *NekRS* provides a convenient way of defining both fluid and solid properties for the temperature equation in the :ref:`Parameter file <par_file>` as shown,
 
 .. code-block:: 
 

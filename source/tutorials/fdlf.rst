@@ -72,7 +72,7 @@ Instructions for installation and setting environment can be found in :ref:`Quic
 
 Before running the case, you will need the mesh generation tool ``genbox``.
 These tools are not packaged with *NekRS* but are available with *Nek5000*. 
-Please follow the instructions in the :ref:`Building the Nek5000 Tool Scripts <scripts>` section to obtain and build this tool.
+Please follow the instructions in the :ref:`Building the Nek5000 Tool Scripts <nek5000_tools>` section to obtain and build this tool.
 
 Mesh Generation
 _______________
@@ -97,7 +97,7 @@ The temperature boundary conditions in the x-direction are a standard Dirichlet 
 In the y-direction the temperature boundary conditions are an insulated condition with zero gradient at :math:`y_{min}` and a constant heat flux at :math:`y_{max}`.
 The z direction boundary conditions are periodic at both :math:`z_{min}` and :math:`z_{max}`.
 
-Note that the boundary conditions specified with lower case letters must have values assigned in relevant functions in the :ref:`udf <udf_functions>` file, which will be shown later in this tutorial (see :ref:`bc_ic_udf`).
+Note that the boundary conditions specified with lower case letters must have values assigned in relevant functions in the :ref:`udf <udf_file>` file, which will be shown later in this tutorial (see :ref:`bc_ic_udf`).
 Now we can generate the mesh with:
 
 .. code-block:: console
@@ -122,7 +122,7 @@ be renamed to ``fdlf.re2``:
 Control parameters file (.par)
 ______________________________
 
-The control parameters for any case are given in the :ref:`par <parameter_file>` file.
+The control parameters for any case are given in the :ref:`par <par_file>` file.
 For this case, create a new file called ``fdlf.par`` with the following:
 
 .. literalinclude:: fdlf/fdlf.par
@@ -141,7 +141,7 @@ This provides an easy way of passing data to *NekRS* that can later be used thro
 Additionally, like all values specified in the ``.par`` file, they can be changed without the need to recompile *NekRS*.
 
 The above case is run with a polynomial order of 5 and upto :math:`t=1s`, as specified using ``endTime`` key.
-Details on the other keys in the ``.par`` can be found :ref:`here <parameter_file>`.
+Details on the other keys in the ``.par`` can be found :ref:`here <par_file>`.
 
 User-Defined Host Functions File (.udf)
 _______________________________________
@@ -268,7 +268,7 @@ It is left empty for this case.
    :language: c++
    :lines: 67-69
 
-For more information on the ``.udf`` file and the available subroutines see :ref:`here <udf_functions>`.
+For more information on the ``.udf`` file and the available subroutines see :ref:`here <udf_file>`.
 
 .. _exact_sol_udf:
 

@@ -3,11 +3,11 @@
 Models and Source Terms
 =======================
 
-With the exception of :term:`LES` modelling, the :ref:`User-Defined Host Functions (.udf) <udf_functions>` file in NekRS provides the necessary and sufficient interface to load most of the physics models (and postprocessing capabilities).
+With the exception of :term:`LES` modelling, the :ref:`User-Defined Host Functions (.udf) <udf_file>` file in NekRS provides the necessary and sufficient interface to load most of the physics models (and postprocessing capabilities).
 For instance, the :ref:`RANS <rans_models>` and :ref:`lowMach compressible <low_mach>` models available in nekRS are loaded by including corresponding header files in ``.udf`` and by calling the appropriate functions from the standard functions in ``.udf``.
 Appropriate boundary conditions for the momentum and scalar transport equations are specified in the :ref:`okl block <okl_block>` (or  in the included ``.oudf`` file).
 Further, any custom source terms that may need to be added to the momentum or scalar equations are also interfaced through the ``.udf`` file.
-Before proceeding it is, therefore, highly recommended that users familiarize themselves with all components of :ref:`.udf file <udf_functions>`. 
+Before proceeding it is, therefore, highly recommended that users familiarize themselves with all components of :ref:`.udf file <udf_file>`.
 
 Turbulence models
 -----------------
@@ -134,7 +134,7 @@ RANS models
 
 .. Note::
   RANS model requires two passive scalar fields which must be specified in control parameters ``(.par)`` file.
-  For details on how to setup the ``.par`` file, refer to the section on :ref:`.par file <parameter_file>` and also
+  For details on how to setup the ``.par`` file, refer to the section on :ref:`.par file <par_file>` and also
   refer :ref:`RANS Channel tutorial <tutorial_rans>` for specific example of ``.par`` file setup for :term:`RANS`
   simulation
 
@@ -235,7 +235,7 @@ The ``updateProperties()`` call computes the diffusion coefficients for the mome
 
   ``updateProperties()`` also computes the eddy viscosity, :math:`\mu_t`, required in the above diffusion coefficients.
   If the user desires to extract :math:`\mu_t` array, say for post-processing purpose, it can be accessed as follows in the ``.udf`` file:
- ``auto o_mue_t = RANSktau::o_mue_t();``
+  ``auto o_mue_t = RANSktau::o_mue_t();``
 
 The ``updateSourceTerms()`` call computes all source terms on the right hand side of the :math:`k` and :math:`\tau` transport equations, which are, 
 
@@ -248,7 +248,7 @@ The above calls will, therefore, update the diffusion properties and source term
 
 The final necessary step in the model setup for the :math:`k`-:math:`\tau` :term:`RANS` model is the specification of the boundary conditions for the :math:`k` and :math:`\tau` transport equations. 
 As explained in the :ref:`RANS theory <rans_models>` section, the wall boundary condition for both :math:`k` and :math:`\tau` equations are zero.
-These must be explicitly assigned in the :ref:`okl block <okl_block>` section of ``.udf`` file,  
+These must be explicitly assigned in the :ref:`okl block <okl_block>` section of ``.udf`` file,
 
 .. code-block:: cpp
 
@@ -267,10 +267,10 @@ These must be explicitly assigned in the :ref:`okl block <okl_block>` section of
 
 .. warning::
 
- It is highly recommended to familiarize with :ref:`okl block <okl_block>` for proper boundary specification. 
- The above example assumes that the computational domain has no inlet boundaries. In case there are inlet boundaries present, they will also have Dirichlet type boundary condition for the :math:`k` and :math:`\tau` transport equations and it will be necessary to differentiate the value of :math:`k` and :math:`\tau` at the walls (zero) from those at the inlet (problem dependent).
- This is done using ``bc->id`` identifier in the :term:`okl block`. 
- See :ref:`boundary conditions section <boundary_conditions>` for usage details on how to specify boundary conditions.
+  It is highly recommended to familiarize with :ref:`okl block <okl_block>` for proper boundary specification.
+  The above example assumes that the computational domain has no inlet boundaries. In case there are inlet boundaries present, they will also have Dirichlet type boundary condition for the :math:`k` and :math:`\tau` transport equations and it will be necessary to differentiate the value of :math:`k` and :math:`\tau` at the walls (zero) from those at the inlet (problem dependent).
+  This is done using ``bc->id`` identifier in the :ref:`okl_block`.
+  See :ref:`boundary conditions section <boundary_conditions>` for usage details on how to specify boundary conditions.
   
 .. _lowmach_model:
 
@@ -390,7 +390,7 @@ An example for ideal gas assumption is shown below.
 
 ``nrs->fluid->o_prop`` stores the fluid viscosity for all GLL points followed by density, while ``nrs->scalar->o_prop`` stores the diffusivity followed by the product of density and specific heat capacity at constant pressure.
 Corresponding array offsets are, therefore, required by ``fillProp`` to identify the locations where each property is stored.
-``nrs->fluid->fieldOffset`` (``uOffset``) is the total number of GLL points in the fluid sub-domain, while the ``nrs->scalar->fieldOffset()`` (``sOffset``) returns the total number of GLL points in the temperature sub-domain. 
+``nrs->fluid->fieldOffset`` (``uOffset``) is the total number of GLL points in the fluid sub-domain, while the ``nrs->scalar->fieldOffset()`` (``sOffset``) returns the total number of GLL points in the temperature sub-domain.
 
 .. note::
 
@@ -479,8 +479,8 @@ while for ideal gas it is,
 
 
 .. warning::
-  
-  In case of simulations involving multiple species (e.g., reactive flows), ``lowMach::qThermalSingleComponent`` is not valid. 
+
+  In case of simulations involving multiple species (e.g., reactive flows), ``lowMach::qThermalSingleComponent`` is not valid.
   A custom user routine will be required to account for divergence contribution from all species
 
 .. _source_terms:
@@ -489,7 +489,7 @@ Custom Source Terms
 --------------------
 
 NekRS offers the user the option to add custom source terms in ``.udf`` file.
-While the specific construction of the kernels for the user defined source terms will be problem dependent, the following section describes the essential components for building custom source terms for the momenutm and scalar transport equations. 
+While the specific construction of the kernels for the user defined source terms will be problem dependent, the following section describes the essential components for building custom source terms for the momenutm and scalar transport equations.
 
 Momentum Equation
 """""""""""""""""

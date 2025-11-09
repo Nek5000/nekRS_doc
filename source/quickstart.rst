@@ -227,6 +227,8 @@ Let’s walk through some useful batch scripts provided by *NekRS*:
 - ``nrsman env`` lists useful environment variables for *NekRS*
 - ``nrsman par`` details all options and settings for the *NekRS* ``.par`` case file
 
+.. _qstart_vis:
+
 -----------------------------
 Visualization
 -----------------------------

@@ -256,7 +256,7 @@ The resulting governing equations for ideal gas assumption, thus, are,
 RANS Models
 -----------
 
-For turbulence modeling :term:`nekRS` offers the two-equation :math:`k`-:math:`\tau` :term:`RANS` model [Tombo2025]_ and its :term:`SST` and :term:`DES` variants [Kumar2024]_.
+For turbulence modeling *nekRS* offers the two-equation :math:`k`-:math:`\tau` :term:`RANS` model [Tombo2025]_ and its :term:`SST` and :term:`DES` variants [Kumar2024]_.
 Linear two-equation RANS models rely on the Bousinessq approximation which relates the Reynolds stress tensor to the mean strain rate, :math:`\boldsymbol{\underline {S}}`, linearly through eddy viscosity.
 The time-averaged momentum equation is given as,
 
