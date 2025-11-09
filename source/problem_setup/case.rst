@@ -300,35 +300,31 @@ NekNek Parameters
 User-Defined Host File (.udf)
 -----------------------------
 
-The ``.udf`` file is a :term:`OKL` and C++ mixed language source file, where user code used to formulate the case is placed.
-This code is placed in various user-defined functions (*UDFs*) and these can be used to perform virtually any action that can be programmed in C++.
-Some of the more common examples are setting initial conditions, querying the solution at regular intervals, and defining custom material properties and source terms.
-The available functions that you may define in the ``.udf`` file are as follows.
+A *UDF* (user-defined function) is an entry point NekRS calls during setup and
+time stepping, letting a case customize behavior without touching core code.
+Typical uses include setting initial and boundary conditions, defining custom
+materials, models, and source terms, and performing sampling and logging for
+post-processing. The available entry-point functions and their typical uses are
+as follows.
 
 .. _okl_block:
 
 OKL block
 """""""""
 
-The ``.udf`` typically includes a ``#ifdef __okl__`` block which is where all OKL code is placed that runs on the compute backend specified to :term:`OCCA`.
-The most frequent use of this block is to provide the functions for boundary conditions that require additional information, such as a value to impose for a Dirichlet velocity condition, or a flux to impose for a Neumann condition.
-Additional user functions may be placed in this block to allow advanced modification of the simulation or post-processing functionality, such as calculating exact values at a specified time point.
-Example generic skeleton of typical code structure in :term:`OKL` block is shown below:
+The ``.udf`` usually contains a preprocessor guard ``#ifdef __okl__`` that
+encloses all :term:`OKL` kernels and device functions compiled for the selected
+:term:`OCCA` backend. For an overview of the OKL language, see the `OKL language guide
+<https://libocca.org/#/okl/introduction>`_.
+NekRS provides default device functions for boundary conditions.
+Details of the ``udfDirichlet`` and ``udfNeumann`` functions used for Dirichlet
+and Neumann boundary conditions, respectively, can be found in :ref:`boundary_conditions`.
 
-.. code-block::
-  
+.. code-block:: cpp
+
   #ifdef __okl__
 
-  @kernel void computeexact(const dlong Ntotal)
-  {
-    for (dlong n = 0; n < Ntotal; ++n; @tile(p_blockSize, @outer, @inner)) {
-      if (n < Ntotal) {
-        // some code
-      }
-    }
-  }
-
-  void udfDirichlet(bcData \*bc)
+  void udfDirichlet(bcData *bc)
   {
     if(isField("fluid velocity")) {
       bc->uxFluid = 1.0;
@@ -343,7 +339,7 @@ Example generic skeleton of typical code structure in :term:`OKL` block is shown
     }
   }
 
-  void udfNeumann(bcData \*bc)
+  void udfNeumann(bcData *bc)
   {
     if(isField("fluid velocity")) {
       bc->tr1 = 0.0;
@@ -355,6 +351,36 @@ Example generic skeleton of typical code structure in :term:`OKL` block is shown
   }
 
   #endif
+
+
+Functions marked with the decorate ``@kernel`` are compiled as device kernels
+and can be launched from UDF host code directly as a regular function.
+
+.. code-block:: cpp
+
+
+  // -------- Device side (inside the OKL block) --------
+  #ifdef __okl__
+
+  @kernel void my_exact(const dlong Ntotal,
+                        @ restrict const dfloat *X,
+                        @ restrict dfloat *U)
+  {
+    for (dlong n = 0; n < Ntotal; ++n; @tile(p_blockSize, @outer, @inner)) {
+      if (n < Ntotal) {
+        U[n] = sin(X[n]);
+      }
+    }
+  }
+
+  #endif
+
+  // -------- Host side (UDF code) --------
+  {
+    auto mesh = nrs->meshV;
+    deviceMemory<dfloat> o_tmp(mesh->Nlocal);
+    my_exact(o_tmp.size(), mesh->o_x, o_tmp); // o_tmp = sin(x)
+  }
 
 .. tip::
 
@@ -368,20 +394,26 @@ Example generic skeleton of typical code structure in :term:`OKL` block is shown
 
      #endif
 
-Details of the ``udfDirichlet`` and ``udfNeumann`` functions used for setting Dirichlet and Neumann boundary conditions, respectively, can be found in :ref:`boundary_conditions`.
+.. tip::
+
+  Many common operations are available in ``platform->linAlg`` and ``opSEM``
+  (e.g., fills, axpby, dot products, norms, gradient, divergence). Prefer these
+  utilities over writing custom kernels when possible. See :ref:`linalg` and
+  :ref:`opsem` for details.
 
 .. _udf_setup0:
 
 UDF_Setup0
 """"""""""
 
-This user-defined function is passed the nekRS :term:`MPI` communicator ``comm`` and a data structure containing all of the user-specified simulation options, ``options``.
-This function is called once at the beginning of the simulation *before* initializing the nekRS internals such as the mesh, solvers, and solution data arrays.
-Because virtually no aspects of the nekRS simulation have been initialized at the point when this function is called, this function is primarily used to modify or read the user settings.
-Example usage is show below:
+``UDF_Setup0`` is called **once** at startup, before *NekRS* initializes the
+mesh, solvers, or solution arrays. It receives the *NekRS* :term:`MPI`
+communicator (``comm``) and the user options object (``options``). Because the
+simulation state is not yet constructed, this function is mainly for reading or
+adjusting user settings.
 
 .. code-block:: c++
-  
+
    static dfloat P_GAMMA;
 
    void UDF_Setup0(MPI_Comm comm, setupAide &options)
@@ -394,9 +426,16 @@ Example usage is show below:
      kernelInfo.define("p_GAMMA") = P_GAMMA;
    }
 
-In the above example ``UDF_Setup0`` routine is used to read ``p_gamma`` key value defined in user section ``CASEDATA`` in the ``.par`` file (see :ref:`user section <sec:user_section>`).
-``platform->par->extract`` is a convenient function available in *NekRS* to perform this operation.
-The extracted value is assigned to a global variable ``P_GAMMA`` defined at the top of ``.udf`` file and later assigned to a preprocessor macro, made available on the device kernels during JIT compilation.
+In this example, ``UDF_Setup0`` reads the ``p_gamma`` key from the ``CASEDATA``
+user section in the ``.par`` file (see :ref:`sec:user_section`) using the
+convenience helper ``platform->par->extract``. The value is stored in a global
+``P_GAMMA`` and then exported as the device macro ``p_GAMMA`` in
+``UDF_LoadKernels`` for JIT-compiled kernels.
+
+.. warning::
+   Do **not** modify parameters used to compile legacy *Nek5000* in
+   ``UDF_Setup0`` such as ``polynomialOrder``.
+
 
 UDF_LoadKernels
 """""""""""""""
