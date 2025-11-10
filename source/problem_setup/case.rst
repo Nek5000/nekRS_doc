@@ -694,59 +694,75 @@ Then, all are converted from ``double`` to ``dfloat`` before copying to
 Mesh File (.re2)
 ----------------
 
-*TODO*
+The ``.re2`` mesh format originates from *Nek5000*, and NekRS uses the **same**
+binary format, so meshes made for Nek5000 remain compatible with NekRS. This
+section summarizes the ``.re2`` layout and conventions. See :ref:`meshing` for
+mesh creation and conversion workflows.
 
-The nekRS mesh file is provided in a binary format with a nekRS-specific
-``.re2`` extension. This format can be produced by either:
+You can obtain ``.re2`` by
 
-* Converting a mesh made with commercial meshing software to ``.re2`` format, or
-* Directly creating an ``.re2``-format mesh with nekRS-specific scripts
+* carrying it over from an existing *Nek5000* case,
+* using a :ref:`mesh converter<meshing_convert>` from other format, or
+* generating it with :ref:`Nek5000 meshing tools <meshing_nek5000_tools>`.
 
-There are three main limitations for the nekRS mesh:
+There are three main limitations for the *nekRS* mesh:
 
-* nekRS is restricted to 3-D hexahedral meshes.
-* The numeric IDs for the mesh boundaries must be ordered contiguously beginning from 1.
-* The ``.re2`` format only supports HEX8 and HEX 20 (eight- and twenty-node) hexahedral elements.
+* **3D hexonly**: meshes must be hexahedral and three-dimensional.
+* **Contiguous boundary IDs**: face boundary IDs must be 1, 2, 3, … without gaps.
+* **Element types**: supported are HEX8 and HEX20.
 
-Lower-dimensional problems can be accommodated on these 3-D meshes by applying zero gradient
-boundary conditions to all solution variables in directions perpendicular to the
-simulation plane or line, respectively. All source terms and material properties in the
-governing equations must therefore also be fixed in the off-interest directions.
+.. tip::
 
-For cases with conjugate heat transfer, nekRS uses an archaic process
-for differentiating between fluid and solid regions. Rather than block-restricting variables to
-particular regions of the same mesh, nekRS retains two independent mesh representations
-for the same problem. One of these meshes represents the flow domain, while the other
-represents the heat transfer domain. The ``nrs_t`` struct, which encapsulates all of
-the nekRS simulation data related to the flow solution, represents the flow mesh as
-``nrs_t.mesh``. Similarly,
-the ``cds_t`` struct, which encapsulates all of the nekRS simulation data related to the
-convection-diffusion passive scalar solution, has one mesh for each passive scalar. That is,
-``cds_t.mesh[0]`` is the mesh for the first passive scalar, ``cds_t.mesh[1]`` is the mesh
-for the second passive scalar, and so on.
-Note that only the temperature passive scalar uses the conjugate heat transfer mesh,
-even though the ``cds_t`` struct encapsulates information related to all other
-passive scalars (such as chemical concentration, or turbulent kinetic energy). All
-non-temperature scalars are only solved on the flow mesh.
+   Lower-dimensional (2D/1D) setups can run on a 3D mesh by enforcing zero-gradient
+   boundary conditions on all solution variables in the out-of-interest directions.
+   Material properties and forcing terms must likewise be constant (or zero-gradient)
+   in those directions.
 
-.. warning::
+The header of a ``.re2`` file is a single 80-character line. While minor
+variants exist across versions, they all encode:
+``(version) (total elements) (dimension) (fluid elements)``
+For example, the ``ethier.re2`` has 32 elements:
 
-  When writing user-defined functions that rely on mesh information (such as boundary
-  IDs and spatial coordinates), you must take care to use the correct mesh representation
-  for your problem. For instance, to apply initial conditions to a flow variable, you
-  would need to loop over the number of quadrature points known on the ``nrs_t`` meshes,
-  rather than the ``cds_t`` meshes for the passive scalars (unless the meshes are the same,
-  such as if you have heat transfer in a fluid-only domain).
-  Also note that the ``cds_t * cds`` object will not exist if your problem
-  does not have any passive scalars.
+.. code-block:: none
 
-nekRS requires that the flow mesh be a subset of the heat transfer mesh. In other words,
-the flow mesh always has less than (or equal to, for cases without conjugate heat transfer)
-the number of elements in the heat transfer mesh. Creating a mesh for conjugate heat
-transfer problems requires additional pre-processing steps that are described in the
-:ref:`Creating a Mesh for Conjugate Heat Tranfser <meshing_cht>` section. The remainder
-of this section describes how to generate a mesh in ``.re2`` format, assuming
-any pre-processing steps have been done for the special cases of conjugate heat transfer.
+   #v003       32  3       32 this is the hdr
+
+.. note::
+
+   In conjugate heat transfer (:term:`CHT`) cases, one mesh file contains both
+   fluid and solid regions, with the fluid mesh stored first, followed by the
+   solid mesh. Consequently, the total element count exceeds the fluid count.
+
+   ``conj_ht`` example (96 fluid + 96 solid = 192 total, 3D):
+
+   .. code-block:: none
+
+      #v002      192  3       96  this is the hdr
+
+   In :term:`CHT` runs, make sure you use the correct ``mesh`` in your ``.udf``.
+   Typically, reference the mesh object under the corresponding solver:
+
+   - ``nrs->fluid->mesh`` for fluid solver mesh
+   - ``nrs->scalar->mesh("temperature")`` or, if it's the first scalar,
+     ``nrs->scalar->mesh[0]`` for temperature mesh
+
+   See the :ref:`conjugate_heat_transfer` tutorial for details, and
+   :ref:`Conjugate Heat Transfer Meshing <meshing_cht>` for creating :term:`CHT`
+   meshes.
+
+After the header and an endianness check, a ``.re2`` file stores, for each
+element, the coordinates of its 8 vertices (HEX8). If curvature is present, up
+to 12 mid-edge nodes are added, yielding HEX20. Some legacy curved primitives
+(e.g., cylinders or spheres) use special curve records for higher-order
+accuracy, but in general edges are represented by second-order polynomials. If
+needed, users can recover exact geometry in ``usrdat2`` or by reading all
+higher-order grid points from a checkpoint file.
+
+Boundary faces are tagged for boundary conditions. The fluid mesh is always
+present, and scalars may have their own tag sets; in :term:`CHT` cases, fluid
+and solid regions each have separate boundary maps. These tags are later mapped
+to *Nek5000* arrays ``CBC(f,e,ifield)`` and to boundary IDs ``boundaryID(f,e)``
+(and ``boundaryIDt(f,e)`` for CHT).
 
 
 .. _sess_file:
@@ -762,7 +778,7 @@ In the ``.sess`` file, each line lists one instance as:
 Paths may be absolute or relative, and the sum of ranks over all instances must
 equal the total MPI ranks requested. Here is the ``eddyNekNek.sess`` example:
 
-.. code-block:: bash
+.. code-block:: none
 
    inside/inside:1;
    outside/outside:1;
