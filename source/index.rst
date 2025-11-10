@@ -47,6 +47,13 @@ Table of Contents
 .. * :ref:`modindex`
 .. * :ref:`search`
 
+Versioning
+----------
+
+.. mdinclude:: _includes/README.md
+   :start-line: 72
+   :end-line: 74
+
 .. mdinclude:: _includes/README.md
    :start-line: 87
    :end-line: 108
