@@ -707,7 +707,7 @@ You can obtain ``.re2`` by
 
 There are three main limitations for the *nekRS* mesh:
 
-* **3D hexonly**: meshes must be hexahedral and three-dimensional.
+* **3D hex only**: meshes must be hexahedral and three-dimensional.
 * **Contiguous boundary IDs**: face boundary IDs must be 1, 2, 3, … without gaps.
 * **Element types**: supported are HEX8 and HEX20.
 
