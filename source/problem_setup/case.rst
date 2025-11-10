@@ -792,10 +792,24 @@ equal the total MPI ranks requested. Here is the ``eddyNekNek.sess`` example:
 
 .. _upd_file:
 
-Trigger Files (.upd)
---------------------
+Trigger File (nekrs.upd)
+------------------------
 
-**TODO** Full description
+The trigger file lets you change selected parameters **at runtime** so you can
+adjust a simulation without killing the job. Before launching, set a catchable
+signal in ``NEKRS_SIGNUM_UPD`` (see :ref:`nekrs_signal`). At runtime, write the
+requested options in ``nekrs.upd`` under the case directory. Accepted keys include:
 
-Allows modifications to the simulation during execution.
-Can be edited and then notify of changes through sending a signal MPI rank 0.
+.. code-block:: ini
+
+   checkpoint = true
+
+   [GENERAL]
+   endTime = 10.0
+   numSteps = 10000
+   writeinterval = 1.0
+
+When *NekRS* receives the configured signal, it reloads ``nekrs.upd`` and applies
+the changes on the next timestep. You can trigger this multiple times during a
+run.
+
