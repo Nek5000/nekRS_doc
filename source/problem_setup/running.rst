@@ -47,8 +47,7 @@ A number of scripts ship with *NekRS* itself and are located in the ``$NEKRS_HOM
 Running on HPC Systems
 ----------------------
 
-Specific scripts and instructions for running on specific HPC systems can be
-found in `nekRS_HPCsupport Github repository <https://github.com/Nek5000/nekRS_HPCsupport>`_.
+Specific scripts and instructions for running on specific HPC systems can be found in `nekRS_HPCsupport Github repository <https://github.com/Nek5000/nekRS_HPCsupport>`_.
 After installing `nekRS`, clone this repository for the latest scripts:
 
 .. code-block:: bash
@@ -62,9 +61,9 @@ With ``NEKRS_HOME`` pointing to your nekRS installation, run:
 
    ./install.sh
 
-The HPC scripts will be installed into ``$NEKRS_HOME/bin`` with a lower case
-machine-name suffix. For example, ``$NEKRS_HOME/bin/nrsqsub_frontier``.
-A typical usage looks like this:
+The HPC scripts will be installed into ``$NEKRS_HOME/bin`` with a lower case machine-name suffix.
+For example, ``$NEKRS_HOME/bin/nrsqsub_frontier``.
+Typical usage is as follows:
 
 .. code-block:: bash
 
@@ -105,11 +104,10 @@ You can see the full list of environment variables via ``--help``:
 Runtime Control with Signals
 ----------------------------
 
-A signal is a small, asynchronous message the OS sends to a process to request
-an action. Examples include ``SIGTERM`` (polite terminate), ``SIGSTOP`` (suspend),
-and ``SIGKILL`` (force kill). *NekRS* installs handlers for specific signals
-(e.g., ``SIGUSR1``/``SIGUSR2``) to perform runtime tasks. You can map which
-signals trigger which actions via environment variables (see ``nrsman env``):
+A signal is a small, asynchronous message the OS sends to a process to request an action.
+Examples include ``SIGTERM`` (polite terminate), ``SIGSTOP`` (suspend), and ``SIGKILL`` (force kill).
+*NekRS* installs handlers for specific signals (e.g., ``SIGUSR1``/``SIGUSR2``) to perform runtime tasks.
+You can map which signals trigger which actions via environment variables (see ``nrsman env``):
 
 .. csv-table:: Signal-related environment variables for *NekRS*
    :widths: 20,20,60
@@ -122,13 +120,13 @@ signals trigger which actions via environment variables (see ``nrsman env``):
 
 .. note::
 
-   Systems differ slightly. Check which numbers correspond to which signals on
-   your terminal with ``kill -l``, ``kill -l SIGUSR2``, or the manuals
-   (``man 7 signal``). We suggest using catchable signals like ``SIGUSR1``/``SIGUSR2``.
+   Systems differ slightly. 
+   Check which numbers correspond to which signals on your terminal with ``kill -l``, ``kill -l SIGUSR2``, or the manuals (``man 7 signal``).
+   We suggest using catchable signals like ``SIGUSR1``/``SIGUSR2``.
 
-Suppose ``SIGUSR2`` is 12 on your system. Export the mapping before running *NekRS*
-with ``export NEKRS_SIGNUM_BACKTRACE=12``. Then, at runtime, send the signal to
-produce per-rank backtraces (useful when a simulation hangs):
+Suppose ``SIGUSR2`` is 12 on your system.
+Export the mapping before running *NekRS* with ``export NEKRS_SIGNUM_BACKTRACE=12``.
+Then, at runtime, send the signal to produce per-rank backtraces (useful when a simulation hangs):
 
 .. code-block:: bash
 

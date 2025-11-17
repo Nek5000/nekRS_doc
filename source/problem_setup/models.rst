@@ -133,10 +133,9 @@ RANS models
   Pertinent example case: `ktauChannel <https://github.com/Nek5000/nekRS/tree/next/examples/ktauChannel>`_
 
 .. Note::
+
   RANS model requires two passive scalar fields which must be specified in control parameters ``(.par)`` file.
-  For details on how to setup the ``.par`` file, refer to the section on :ref:`.par file <par_file>` and also
-  refer :ref:`RANS Channel tutorial <tutorial_rans>` for specific example of ``.par`` file setup for :term:`RANS`
-  simulation
+  For details on how to setup the ``.par`` file, refer to the section on :ref:`.par file <par_file>` and also refer :ref:`RANS Channel tutorial <tutorial_rans>` for specific example of ``.par`` file setup for :term:`RANS` simulation
 
 The essential routines for the :term:`RANS` models in NekRS are available in the namespace in ``RANSktau.hpp``.
 The default RANS model in nekRS is the :math:`k`-:math:`\tau` model [Tombo2025]_.
@@ -162,11 +161,13 @@ To use the :term:`RANS` model in nekRS, first declare the relevant scalar identi
 
 .. warning::
 
-    The ``[SCALAR XX]`` cards for ``k`` and ``tau`` do not accept any transport properties for the corresponding equations. They are specified internally, automatically, by the RANS solver.
+    The ``[SCALAR XX]`` cards for ``k`` and ``tau`` do not accept any transport properties for the corresponding equations.
+    They are specified internally, automatically, by the RANS solver.
 
 .. warning::
 
-  nekRS assumes that the :math:`\tau` field array always follows the TKE scalar field. Thus, in the par file the order of ``k`` and ``tau`` in ``[GENERAL]`` card must be as shown above.
+  nekRS assumes that the :math:`\tau` field array always follows the TKE scalar field.
+  Thus, in the par file the order of ``k`` and ``tau`` in ``[GENERAL]`` card must be as shown above.
  
 Next, add the necessary include file at the top of your ``.udf`` file:
 

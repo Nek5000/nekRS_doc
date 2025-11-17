@@ -5,7 +5,7 @@ Case files
 
 NekRS simulation requires a number of case definition files which are described in this page.
 An overview of these are presented in the image below.
-See also :ref:`file_extensions` for summarized tables.
+See also :ref:`file_extensions` for summarized tables of all *NekRS* files and their extensions.
 
 .. _fig:case_overview:
 
@@ -48,7 +48,7 @@ Parameter File (.par)
 
 .. warning::
 
-   *nekRS* ``.par`` file is not compatible to *Nek5000* ``.par`` file.
+   *nekRS* ``.par`` file is not compatible or interchangeable with *Nek5000* ``.par`` file.
 
 Most information about the problem setup is defined in the parameter (``.par``) file.
 This file is organized in a number of **sections**, each with a number of **keys**.
@@ -102,8 +102,7 @@ The valid sections for setting up a *NekRS* simulation are:
 User Sections
 """"""""""""""""""
 
-Custom sections may be added via the ``userSections`` key to pass additional
-keys into the code.
+Custom sections may be added via the ``userSections`` key to pass additional keys into the code.
 
 .. code-block:: ini
 
@@ -306,26 +305,21 @@ NekNek Parameters
 User-Defined Host File (.udf)
 -----------------------------
 
-A *UDF* (user-defined function) is an entry point NekRS calls during setup and
-time stepping, letting a case customize behavior without touching core code.
-Typical uses include setting initial and boundary conditions, defining custom
-materials, models, and source terms, and performing sampling and logging for
-post-processing. The available entry-point functions and their typical uses are
-as follows. All UDF functions are **optional**. If a function is not provided,
-NekRS uses a default no-op version.
+A *UDF* (user-defined function) is an entry point *NekRS* calls during setup and time stepping, letting a case customize behavior without touching core code.
+Typical uses include setting initial and boundary conditions, defining custom materials, models, and source terms, and performing sampling and logging for post-processing.
+The available entry-point functions and their typical uses are as follows.
+All UDF functions are **optional**.
+If a function is not provided, NekRS uses a default no-op version.
 
 .. _okl_block:
 
 OKL block
 """""""""
 
-The ``.udf`` usually contains a preprocessor guard ``#ifdef __okl__`` that
-encloses all :term:`OKL` kernels and device functions compiled for the selected
-:term:`OCCA` backend. For an overview of the OKL language, see the `OKL language guide
-<https://libocca.org/#/okl/introduction>`_.
+The ``.udf`` usually contains a preprocessor guard ``#ifdef __okl__`` that encloses all :term:`OKL` kernels and device functions compiled for the selected :term:`OCCA` backend.
+For an overview of the OKL language, see the `OKL language guide <https://libocca.org/#/okl/introduction>`_.
 NekRS provides default device functions for boundary conditions.
-Details of the ``udfDirichlet`` and ``udfNeumann`` functions used for Dirichlet
-and Neumann boundary conditions, respectively, can be found in :ref:`boundary_conditions`.
+Details of the ``udfDirichlet`` and ``udfNeumann`` functions used for Dirichlet and Neumann boundary conditions, respectively, can be found in :ref:`boundary_conditions`.
 
 .. code-block:: cpp
 
@@ -359,9 +353,7 @@ and Neumann boundary conditions, respectively, can be found in :ref:`boundary_co
 
   #endif
 
-
-Functions marked with the decorate ``@kernel`` are compiled as device kernels
-and can be launched from UDF host code directly as a regular function.
+Functions marked with the decorate ``@kernel`` are compiled as device kernels and can be launched from UDF host code directly as a regular function.
 
 .. code-block:: cpp
 
@@ -402,21 +394,18 @@ and can be launched from UDF host code directly as a regular function.
 
 .. tip::
 
-   Many common operations are available in ``platform->linAlg`` and ``opSEM``
-   (e.g., fills, axpby, dot products, norms, gradient, divergence). Prefer these
-   utilities over writing custom kernels when possible. See :ref:`linalg` and
-   :ref:`opsem` for details.
+   Many common operations are available in ``platform->linAlg`` and ``opSEM`` (e.g., fills, axpby, dot products, norms, gradient, divergence).
+   Prefer these utilities over writing custom kernels when possible.
+   See :ref:`linalg` and :ref:`opsem` for details.
 
 .. _udf_setup0:
 
 UDF_Setup0
 """"""""""
 
-``UDF_Setup0`` is called **once** at startup, before *NekRS* initializes the
-mesh, solvers, or solution arrays. It receives the *NekRS* :term:`MPI`
-communicator (``comm``) and the user options object (``options``). Because the
-simulation state is not yet constructed, this function is mainly for reading or
-adjusting user settings.
+``UDF_Setup0`` is called **once** at startup, before *NekRS* initializes the mesh, solvers, or solution arrays.
+It receives the *NekRS* :term:`MPI` communicator (``comm``) and the user options object (``options``).
+Because the simulation state is not yet constructed, this function is mainly for reading or adjusting user settings.
 
 .. code-block:: c++
 
@@ -432,38 +421,31 @@ adjusting user settings.
      kernelInfo.define("p_GAMMA") = P_GAMMA;
    }
 
-In this example, ``UDF_Setup0`` reads the ``p_gamma`` key from the ``CASEDATA``
-user section in the ``.par`` file (see :ref:`sec:user_section`) using the
-convenience helper ``platform->par->extract``. The value is stored in a global
-``P_GAMMA`` and then exported as the device macro ``p_GAMMA`` in
-``UDF_LoadKernels`` for JIT-compiled kernels.
+In this example, ``UDF_Setup0`` reads the ``p_gamma`` key from the ``CASEDATA`` user section in the ``.par`` file (see :ref:`sec:user_section`) using the convenience helper ``platform->par->extract``.
+The value is stored in a global ``P_GAMMA`` and then exported as the device macro ``p_GAMMA`` in ``UDF_LoadKernels`` for JIT-compiled kernels.
 
 .. warning::
-   Do **not** modify parameters used to compile legacy *Nek5000* in
-   ``UDF_Setup0`` such as ``polynomialOrder``.
+
+   Do **not** modify parameters used to compile legacy *Nek5000* in ``UDF_Setup0`` such as ``polynomialOrder``.
 
 
 UDF_LoadKernels
 """""""""""""""
 
-As shown in the example above, ``UDF_LoadKernels`` is primarily used to attach
-preprocessor macros (global defines) for device kernels.
+As shown in the example above, ``UDF_LoadKernels`` is primarily used to attach preprocessor macros (global defines) for device kernels.
 It takes ``deviceKernelProperties& kernelInfo`` which holds compilation metadata.
 Using ``kernelInfo.define("NAME") = value`` to expose constants to :term:`OKL`.
 
 .. tip::
 
-   For constants passed to device code (via ``UDF_LoadKernels``), it’s recommended
-   to use a ``p_`` prefix (e.g., ``p_gamma``, ``p_Pr``, ``p_Re``) for clarity and
-   consistency.
+   For constants passed to device code (via ``UDF_LoadKernels``), it’s recommended to use a ``p_`` prefix (e.g., ``p_gamma``, ``p_Pr``, ``p_Re``) for clarity and consistency.
+
 
 UDF_Setup
 """""""""
 
-``UDF_Setup`` is called once at the beginning of the simulation *after* *nekRS*
-initializing the mesh, solution fields, material properties, and boundary mappings.
-It is typically the ``.udf`` function users will use most to overwrite defaults
-and customize settings.
+``UDF_Setup`` is called once at the beginning of the simulation *after* *NekRS* initializing the mesh, solution fields, material properties, and boundary mappings.
+It is typically the ``.udf`` function users will use most to overwrite defaults and customize settings.
 Various operations are performed within this routine, including, but not limited to:
 
 * Assign initial conditions (see :ref:`initial_conditions`).
@@ -480,9 +462,9 @@ Various operations are performed within this routine, including, but not limited
 UDF_ExecuteStep
 """""""""""""""
 
-``UDF_ExecuteStep`` offers the most flexibility. It is called once just before
-time marching begins, and then once **per time step**. The routine receives the
-current time (``double t``) and the step index (``int tstep``).
+``UDF_ExecuteStep`` offers the most flexibility. 
+It is called once just before time marching begins, and then once **per time step**.
+The routine receives the current time (``double t``) and the step index (``int tstep``).
 Typical operations include:
 
 * Run time-averaging updates (see *TODO*)
@@ -498,22 +480,15 @@ Typical operations include:
 Legacy Nek5000 User File (.usr)
 --------------------------------
 
-NekRS includes an optional legacy interface to *Nek5000* so you can reuse
-Fortran-77 user routines. If ``<case>.usr`` is present in the case directory,
-the file is compiled and linked, though not all *Nek5000* user subroutines are
-invoked by NekRS.
+NekRS includes an optional interface to *Nek5000* for using legacy Fortran-77 user routines.
+If ``<case>.usr`` is present in the case directory, the file is compiled and linked, though not all *Nek5000* user subroutines are invoked by NekRS.
 
-Many one-time setup routines are still honored so existing *Nek5000* settings can
-be carried over. Users can continually use subroutines
-``usrdat0``, ``usrdat``, ``usrdat2``, ``usrdat3``, ``usrsetvert`` and ``useric``
-to modify mesh geometry, tag boundary surfaces, adjust connectivity and set initial
-conditions.
-Compute intensive subroutines such as ``userbc``, ``userf``, ``userq`` and ``uservp``
-are **not** used by *NekRS*. Users need to convert them into UDF or OKL implementation.
+Many one-time setup routines are still honored so existing *Nek5000* settings can be carried over.
+Users can continually use subroutines ``usrdat0``, ``usrdat``, ``usrdat2``, ``usrdat3``, ``usrsetvert`` and ``useric`` to modify mesh geometry, tag boundary surfaces, adjust connectivity and set initial conditions.
+Compute intensive subroutines such as ``userbc``, ``userf``, ``userq`` and ``uservp`` are **not** used by *NekRS*. Users need to convert them into UDF or OKL implementation.
 
-The ``userchk`` is **not** called automatically. If needed, call it manually
-from UDF (e.g., ``UDF_ExecuteStep``) for post-processing or other setup tasks,
-for example:
+The ``userchk`` is **not** called automatically. 
+If needed, call it manually from UDF (e.g., ``UDF_ExecuteStep``) for post-processing or other setup tasks, for example:
 
 .. code-block:: c++
 
@@ -528,30 +503,24 @@ for example:
 
 .. note::
 
-   - ``nrs->copyToNek`` copies all solution fields from :term:`OCCA` device arrays
-     to *Nek5000* (Fortran) host arrays. Use it only when ``nek::userchk``
-     needs current solutions.
-   - This transfer is expensive. Wrap the call under a suitable condition to
-     avoid excessive overhead.
-   - Call ``nrs->copyFromNek`` only if the legacy routine modifies solution
-     data that must be synchronized back to the device.
+   - ``nrs->copyToNek`` copies all solution fields from :term:`OCCA` device arrays to *Nek5000* (Fortran) host arrays.
+     Use it only when ``nek::userchk`` needs current solutions.
+   - This transfer is expensive.
+     Wrap the call under a suitable condition to avoid excessive overhead.
+   - Call ``nrs->copyFromNek`` only if the legacy routine modifies solution data that must be synchronized back to the device.
 
 For background on Nek5000, see the `Nek5000 documentation <https://nek5000.github.io/NekDoc/>`_.
 Details on these initialization routines are documented `here <https://nek5000.github.io/NekDoc/problem_setup/usr_file.html#initialization-routines>`_.
-To migrate a case, follow the *TODO* tutorial to converting a *Nek5000* case to
-*NekRS*.
-In this section, we focus one the interface for referencing variables between
-``.udf`` and ``.usr``.
+To migrate a case, follow the *TODO* tutorial for converting a *Nek5000* case to *NekRS*.
+In this section, we focus on the interface for referencing variables between ``.udf`` and ``.usr``.
 
 Legacy Data Interface
 """""""""""""""""""""
 
-NekRS does not “send” values or arrays to *Nek5000*. Instead, it shares them by
-**registering pointers**. On the Fortran side, any variable or array you expose
-must have a stable address, so put it in a ``COMMON`` block or give it the
-``SAVE`` attribute.
-Use the Fortran routine ``nekrs_registerPtr`` to register variables/arrays so
-NekRS can reference them by a string key.
+NekRS does not “send” values or arrays to *Nek5000*.
+Instead, it shares them by **registering pointers**.
+On the Fortran side, any variable or array you expose must have a stable address, so put it in a ``COMMON`` block or give it the ``SAVE`` attribute.
+Use the Fortran routine ``nekrs_registerPtr`` to register variables/arrays so NekRS can reference them by a string key.
 
 Here is an example ``.usr`` file:
 
@@ -588,15 +557,12 @@ Here is an example ``.usr`` file:
          return
          end
 
-In this example, ``COMMON /exact/`` block holds two arrays store exact solutions
-(e.g., velocity and temperature). We register the **first-element addresses** of
-each velocity components and of temperature with ``nekrs_registerPtr`` inside
-``userchk``. The scalar ``gamma`` is registered in ``usrdat0`` and kept alive
-with ``SAVE``. Any data you register must be in a ``COMMON`` block or ``SAVE``
-so its address remains valid.
+In this example, ``COMMON /exact/`` block holds two arrays store exact solutions (e.g., velocity and temperature).
+We register the **first-element addresses** of each velocity components and of temperature with ``nekrs_registerPtr`` inside ``userchk``.
+The scalar ``gamma`` is registered in ``usrdat0`` and kept alive with ``SAVE``.
+Any data you register must be in a ``COMMON`` block or ``SAVE`` so its address remains valid.
 
-These pointers can then be looked up in the ``.udf`` and used to exchange data
-between *NekRS* and *Nek5000*. Example usage in ``.udf``:
+These pointers can then be looked up in the ``.udf`` and used to exchange data between *NekRS* and *Nek5000*. Example usage in ``.udf``:
 
 .. code-block:: c++
 
@@ -654,59 +620,54 @@ between *NekRS* and *Nek5000*. Example usage in ``.udf``:
      }
    }
 
-As shown, ``nek::ptr`` returns the registered pointers by the string keys
-defined in the ``.usr`` file. In ``UDF_Setup0``, the value referenced by
-``gamma`` is read into a C++ static and later exported as a device macro in
-``UDF_LoadKernels``.
+As shown, ``nek::ptr`` returns the registered pointers by the string keys defined in the ``.usr`` file.
+In ``UDF_Setup0``, the value referenced by ``gamma`` is read into a C++ static and later exported as a device macro in ``UDF_LoadKernels``.
 
-For the arrays (``uexact``, ``vexact``, ``wexact``, ``texact``), we show two ways:
-use a raw host pointer from ``nek::ptr<double>(...)`` for velocity components
-and use a range constructor to make a copy into ``std::vector`` for temperature.
-Then, all are converted from ``double`` to ``dfloat`` before copying to
-:term:`OCCA` arrays.
+For the arrays (``uexact``, ``vexact``, ``wexact``, ``texact``), we show two ways, viz., use a raw host pointer from ``nek::ptr<double>(...)`` for velocity components or use a range constructor to make a copy into ``std::vector`` for temperature.
+Then, all are converted from ``double`` to ``dfloat`` before copying to :term:`OCCA` arrays.
 
 .. note::
 
    *NekRS* compiles Fortran ``real`` as ``real*8`` (i.e., C++ ``double``).
    In *NekRS*, ``dfloat`` may be ``double`` (default) or ``float`` (FP32 mode).
-   Converting on the host as shown works for both settings. If you always run in
-   FP64, you can skip the cast. Alternatively, you can convert on device via
-   ``platform->copyDoubleToDfloatKernel``.
+   Converting on the host as shown works for both settings.
+   If you always run in FP64, you can skip the cast.
+   Alternatively, you can convert on device via ``platform->copyDoubleToDfloatKernel``.
 
 .. note::
 
    **Nek5000/NekRS sizes and offsets**
 
-   - ``mesh->Nlocal``: number of local points on this rank
-     (e.g., ``lx1*ly1*lz1*nelv``; fluid+solid mesh uses ``nelt``).
+   - ``mesh->Nlocal``: number of local points on this rank (e.g., ``lx1*ly1*lz1*nelv``; fluid+solid mesh uses ``nelt``).
 
    - ``fieldOffset``: padded device stride (alignment + max local size).
      It is **not** equal to ``lx1*ly1*lz1*lelv``.
 
-   - ``fieldOffsetSum``: sum of component strides. |br|
-     For velocity: ``fieldOffsetSum = 3 * fieldOffset``. |br|
-     For scalar, ``fieldOffsetSum = nrs->Nscalar * fieldOffset``.
+   - ``fieldOffsetSum``: sum of component strides.
 
-   Use ``fieldOffset``/``fieldOffsetSum`` for declaring multi-component device
-   arrays and indexing. Use ``Nlocal`` for loop lengths and buffer sizes.
+     -- For velocity: ``fieldOffsetSum = 3 * fieldOffset``.
+
+     -- For scalar: ``fieldOffsetSum = nrs->Nscalar * fieldOffset``.
+
+   Use ``fieldOffset``/``fieldOffsetSum`` for declaring multi-component device arrays and indexing.
+   Use ``Nlocal`` for loop lengths and buffer sizes.
 
 .. _re2_file:
 
 Mesh File (.re2)
 ----------------
 
-The ``.re2`` mesh format originates from *Nek5000*, and NekRS uses the **same**
-binary format, so meshes made for Nek5000 remain compatible with NekRS. This
-section summarizes the ``.re2`` layout and conventions. See :ref:`meshing` for
-mesh creation and conversion workflows.
+The ``.re2`` mesh format originates from *Nek5000*, and NekRS uses the **same** binary format, so meshes made for *Nek5000* remain compatible with *NekRS*.
+This section summarizes the ``.re2`` layout and conventions.
+See :ref:`meshing` for mesh creation and conversion workflows.
 
-You can obtain ``.re2`` by
+You can obtain ``.re2`` by:
 
-* carrying it over from an existing *Nek5000* case,
-* using a :ref:`mesh converter<meshing_convert>` from other format, or
-* generating it with :ref:`Nek5000 meshing tools <meshing_nek5000_tools>`.
+* Porting from an existing *Nek5000* case,
+* Using a :ref:`mesh converter<meshing_convert>` from other format, or
+* Generating it with :ref:`Nek5000 meshing tools <meshing_nek5000_tools>`.
 
-There are three main limitations for the *nekRS* mesh:
+There are three main limitations for the *NekRS* mesh:
 
 * **3D hex only**: meshes must be hexahedral and three-dimensional.
 * **Contiguous boundary IDs**: face boundary IDs must be 1, 2, 3, … without gaps.
@@ -714,14 +675,11 @@ There are three main limitations for the *nekRS* mesh:
 
 .. tip::
 
-   Lower-dimensional (2D/1D) setups can run on a 3D mesh by enforcing zero-gradient
-   boundary conditions on all solution variables in the out-of-interest directions.
-   Material properties and forcing terms must likewise be constant (or zero-gradient)
-   in those directions.
+   Lower-dimensional (2D/1D) setups can run on a 3D mesh by enforcing zero-gradient boundary conditions on all solution variables in the out-of-interest directions.
+   Material properties and forcing terms must likewise be constant (or zero-gradient) in those directions.
 
-The header of a ``.re2`` file is a single 80-character line. While minor
-variants exist across versions, they all encode:
-``(version) (total elements) (dimension) (fluid elements)``
+The header of a ``.re2`` file is a single 80-character line. 
+While minor variants exist across versions, they all encode: ``(version) (total elements) (dimension) (fluid elements)``.
 For example, the ``ethier.re2`` has 32 elements:
 
 .. code-block:: none
@@ -730,9 +688,8 @@ For example, the ``ethier.re2`` has 32 elements:
 
 .. note::
 
-   In conjugate heat transfer (:term:`CHT`) cases, one mesh file contains both
-   fluid and solid regions, with the fluid mesh stored first, followed by the
-   solid mesh. Consequently, the total element count exceeds the fluid count.
+   In conjugate heat transfer (:term:`CHT`) cases, one mesh file contains both fluid and solid regions, with the fluid mesh stored first, followed by the solid mesh.
+   Consequently, the total element count exceeds the fluid count.
 
    ``conj_ht`` example (96 fluid + 96 solid = 192 total, 3D):
 
@@ -747,23 +704,16 @@ For example, the ``ethier.re2`` has 32 elements:
    - ``nrs->scalar->mesh("temperature")`` or, if it's the first scalar,
      ``nrs->scalar->mesh[0]`` for temperature mesh
 
-   See the :ref:`conjugate_heat_transfer` tutorial for details, and
-   :ref:`Conjugate Heat Transfer Meshing <meshing_cht>` for creating :term:`CHT`
-   meshes.
+   See the :ref:`conjugate_heat_transfer` tutorial for details, and :ref:`Conjugate Heat Transfer Meshing <meshing_cht>` for creating :term:`CHT` meshes.
 
-After the header and an endianness check, a ``.re2`` file stores, for each
-element, the coordinates of its 8 vertices (HEX8). If curvature is present, up
-to 12 mid-edge nodes are added, yielding HEX20. Some legacy curved primitives
-(e.g., cylinders or spheres) use special curve records for higher-order
-accuracy, but in general edges are represented by second-order polynomials. If
-needed, users can recover exact geometry in ``usrdat2`` or by reading all
-higher-order grid points from a checkpoint file.
+After the header and an endianness check, a ``.re2`` file stores, for each element, the coordinates of its 8 vertices (HEX8).
+If curvature is present, upto 12 mid-edge nodes are added, yielding HEX20.
+Some legacy curved primitives (e.g., cylinders or spheres) use special curve records for higher-order accuracy, but in general edges are represented by second-order polynomials.
+If needed, users can recover exact geometry in ``usrdat2`` or by reading all higher-order grid points from a checkpoint file.
 
-Boundary faces are tagged for boundary conditions. The fluid mesh is always
-present, and scalars may have their own tag sets; in :term:`CHT` cases, fluid
-and solid regions each have separate boundary maps. These tags are later mapped
-to *Nek5000* arrays ``CBC(f,e,ifield)`` and to boundary IDs ``boundaryID(f,e)``
-(and ``boundaryIDt(f,e)`` for CHT).
+Boundary faces are tagged for boundary conditions. 
+The fluid mesh is always present, and scalars may have their own tag sets; in :term:`CHT` cases, fluid and solid regions each have separate boundary maps.
+These tags are later mapped to *Nek5000* arrays ``CBC(f,e,ifield)`` and to boundary IDs ``boundaryID(f,e)`` (and ``boundaryIDt(f,e)`` for :term:`CHT`).
 
 
 .. _sess_file:
@@ -771,13 +721,12 @@ to *Nek5000* arrays ``CBC(f,e,ifield)`` and to boundary IDs ``boundaryID(f,e)``
 NekNek Session File (.sess)
 ---------------------------
 
-NekNek allows coupling of multiple overlapping subdomains, relaxing the need for
-conformal meshes. Each *nekRS* instance uses its own `.par` file.
+NekNek allows coupling of multiple overlapping subdomains, relaxing the need for conformal meshes.
+Each *NekRS* instance uses its own `.par` file.
 In the ``.sess`` file, each line lists one instance as:
 ``<path-to-par-file>:<num-mpi-ranks>;``
 
-Paths may be absolute or relative, and the sum of ranks over all instances must
-equal the total MPI ranks requested. Here is the ``eddyNekNek.sess`` example:
+Paths may be absolute or relative, and the sum of ranks over all instances must equal the total MPI ranks requested. Here is the ``eddyNekNek.sess`` example:
 
 .. code-block:: none
 
@@ -786,9 +735,9 @@ equal the total MPI ranks requested. Here is the ``eddyNekNek.sess`` example:
 
 .. tip::
 
-   Using a subfolder per case is optional but recommended. On HPC systems, try
-   to size each session in units of a node. For example, if a node has 4 GPUs,
-   it’s often best to make each session’s MPI ranks a multiple of 4.
+   Using a subfolder per case is optional but recommended. 
+   On HPC systems, try to size each session in units of a node.
+   For example, if a node has 4 GPUs, it’s often best to make each session’s MPI ranks a multiple of 4.
 
 
 .. _upd_file:
@@ -796,10 +745,10 @@ equal the total MPI ranks requested. Here is the ``eddyNekNek.sess`` example:
 Trigger File (nekrs.upd)
 ------------------------
 
-The trigger file lets you change selected parameters **at runtime** so you can
-adjust a simulation without killing the job. Before launching, set a catchable
-signal in ``NEKRS_SIGNUM_UPD`` (see :ref:`nekrs_signal`). At runtime, write the
-requested options in ``nekrs.upd`` under the case directory. Accepted keys include:
+The trigger file lets you change selected parameters **at runtime** so you can adjust a simulation without killing the job.
+Before launching, set a catchable signal in ``NEKRS_SIGNUM_UPD`` (see :ref:`nekrs_signal`).
+At runtime, write the requested options in ``nekrs.upd`` under the case directory.
+Accepted keys include:
 
 .. code-block:: ini
 
@@ -810,7 +759,39 @@ requested options in ``nekrs.upd`` under the case directory. Accepted keys inclu
    numSteps = 10000
    writeinterval = 1.0
 
-When *NekRS* receives the configured signal, it reloads ``nekrs.upd`` and applies
-the changes on the next timestep. You can trigger this multiple times during a
-run.
+When *NekRS* receives the configured signal, it reloads ``nekrs.upd`` and applies the changes on the next timestep. You can trigger this multiple times during a run.
 
+.. _file_extensions:
+
+NekRS Files & Extensions
+---------------------------
+
+.. csv-table:: Case Files & Extensions
+   :header: "Extension","Name","Required?","Notes / Typical usage"
+   :widths: 20,30,20,30
+   :quote: "
+   :delim: ,
+
+   ".sess","NekNek sessions file","Yes (Only for NekNek)","See :ref:`sess_file`"
+   ".par","Main parameter file","Yes","See :ref:`par_file`"
+   ".udf","User-defined functions","Yes","See :ref:`udf_file`"
+   ".oudf","Extra OKL kernels file","No","See :ref:`okl_block`"
+   ".upd","Trigger file","No","See :ref:`upd_file`"
+
+   ".usr","Legacy Nek5000 user file","No","See :ref:`usr_file`"
+   ".re2","Mesh file","Yes","See :ref:`re2_file`"
+   ".co2","Legacy connectivity file","No","See `Nek5000 co2 example <https://nek5000.github.io/NekDoc/tutorials/multi_rans.html?highlight=co2#generating-connectivity-file-co2>`_"
+
+   ".yaml","YAML config file","No","Used for ``nekAscent.hpp`` in-situ visualization"
+
+.. csv-table:: Output Files & Extensions
+   :header: "Extension","Name","Notes / Typical usage"
+   :widths: 20,40,40
+   :quote: "
+   :delim: ,
+
+   "\*0.f0000","Nek format checkpoint file","0-based index. See :ref:`qstart_vis`"
+   ".nek5000","Nek format checkpoint metadata file", "See :ref:`qstart_vis`"
+   ".bp/","ADIOS2 format checkpoint (folder)",""
+   ".log.*","Log files","From ``nrsbmpi``, suffixed by rank count and rollover to ``.log1``"
+   ".vtu/.vtk","VTK files","Mainly for particle data"

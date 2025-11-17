@@ -54,15 +54,6 @@ where the bulk temperature is given by the expression
 
    T_b(x) = \left(\frac{2q''}{U_m \rho c_p H}\right)x + T_{in}
 
-.. Additionally, we will extract the predicted Darcy friction factor and Nusselt number from the simulation and confirm that they match the expected values.
-
-.. .. math::
-
-   f = \frac{96}{Re}
-
-.. .. math::
-
-   Nu = \frac{140}{17}
 
 Before You Begin
 ________________
@@ -86,6 +77,7 @@ To create the input file for ``genbox``, copy the following script and save the 
 For this mesh we are specifying 50 uniform elements in the stream-wise (:math:`x`) direction, 5 uniform elements in the span-wise (:math:`y`) direction, and 3 uniform element in :math:`z`-direction.
 
 .. note::
+
     *NekRS* can only solve 3D problems, therefore the mesh has 3 elements in the z-direction with periodic boundary condition.
     At least 3 mesh layers are required to correctly construct the mesh connectivity array in *NekRS*.
 
@@ -105,8 +97,7 @@ Now we can generate the mesh with:
    $ genbox
 
 When prompted provide the input file name, which for this case is ``fdlf.box``.
-The tool will produce binary mesh and boundary data file ``box.re2`` which should 
-be renamed to ``fdlf.re2``:
+The tool will produce binary mesh and boundary data file ``box.re2`` which should be renamed to ``fdlf.re2``:
 
 .. code-block:: console
 

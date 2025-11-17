@@ -16,7 +16,7 @@ The steps below target building *nekRS* on a local machine (desktop or laptop). 
 
    Specific instructions for installing on select :term:`HPC` systems can be found `here <https://github.com/Nek5000/nekRS_HPCsupport>`_.
 
-Before you begin, note the following **requirements** for *nekRS*:
+Before you begin, note the following **requirements** for *NekRS*:
 
 .. mdinclude:: _includes/README.md
    :start-line: 32
@@ -28,9 +28,8 @@ Most of these should either be available by default in your OS of choice, or can
 
     .. tab:: Debian/Ubuntu
 
-        Debian based systems (such as Ubuntu) use the ``apt`` package manager. GNU
-        Compilers for C++ and fortran alongside compatible OpenMPI and CMake
-        installs can be acquired with:
+        Debian based systems (such as Ubuntu) use the ``apt`` package manager.
+        GNU Compilers for C++ and fortran alongside compatible OpenMPI and CMake installs can be acquired with:
 
         .. code-block:: bash
 
@@ -39,10 +38,8 @@ Most of these should either be available by default in your OS of choice, or can
 
     .. tab:: Mac
 
-        The `Homebrew <https://brew.sh/>`_ package manager is commonly used on Mac
-        to provide similar functionality to Linux package managers. GNU Compilers
-        for C++ and fortran alongside compatible OpenMPI and CMake installs can be
-        acquired with:
+        The `Homebrew <https://brew.sh/>`_ package manager is commonly used on Mac to provide similar functionality to Linux package managers.
+        GNU Compilers for C++ and fortran alongside compatible OpenMPI and CMake installs can be acquired with:
 
         .. code-block:: bash
 
@@ -100,16 +97,13 @@ Use the helper script ``./build.sh`` from the *nekRS* directory.
 .. note::
 
     The environment variables and CMake options are optional.
-    ``CC=mpicc``, ``CXX=mpic++`` and ``FC=mpif77`` are usually the default system
-    ``MPI`` wrapper installed using the ``apt`` or ``brew`` package manager as shown
-    :ref:`above <qstart_before>`.
+    ``CC=mpicc``, ``CXX=mpic++`` and ``FC=mpif77`` are usually the default system ``MPI`` wrapper installed using the ``apt`` or ``brew`` package manager as shown :ref:`above <qstart_before>`.
     If MPI comes from a custom or vendor stack, set these variable accordingly.
 
 .. tip::
 
-   Like standard CMake workflows, *nekrs* configures and compiles in ``./build/``
-   and installs to ``CMAKE_INSTALL_PREFIX``. If you updates *NekRS* or your compiler
-   stacks, make sure to remove the previous ``build/`` and install directory.
+   Like standard CMake workflows, *nekrs* configures and compiles in ``./build/`` and installs to ``CMAKE_INSTALL_PREFIX``.
+   If you updates *NekRS* or your compiler stacks, make sure to remove the previous ``build/`` and install directory.
 
 The build script firsts configure CMake and prints a summary like:
 
@@ -133,8 +127,7 @@ The build script firsts configure CMake and prints a summary like:
   cmake --build ./build --target install -j8
   Please check the summary above carefully and press ENTER to continue or ctrl-c to cancel
 
-Review this output like the installation directory and compilers, and
-if it looks correct, press **Enter** to compile and install.
+Review this output like the installation directory and compilers, and if it looks correct, press **Enter** to compile and install.
 On success, you’ll see:
 
 .. code-block:: none
@@ -143,17 +136,14 @@ On success, you’ll see:
 
 .. tip::
 
-   Make sure the Default backend matches your hardware: ``CUDA`` (NVIDIA),
-   ``HIP`` (AMD), or ``SYCL`` (Intel).  If no GPU backend is detected at configure
-   time, NekRS falls back to ``Serial`` (CPU).  You can switch from a GPU default to
-   Serial at runtime, but not the other way around unless the GPU backend was
-   enabled during build.
+   Make sure the Default backend matches your hardware: ``CUDA`` (NVIDIA), ``HIP`` (AMD), or ``SYCL`` (Intel).
+   If no GPU backend is detected at configure time, NekRS falls back to ``Serial`` (CPU).
+   You can switch from a GPU default to Serial at runtime, but not the other way around unless the GPU backend was enabled during build.
 
 Setting the Environment
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Assuming the install directory is ``$HOME/.local/nekrs``, set ``NEKRS_HOME``
-(required) and optionally prepend its ``bin`` to ``PATH`` (recommended).
+Assuming the install directory is ``$HOME/.local/nekrs``, set ``NEKRS_HOME`` (required) and optionally prepend its ``bin`` to ``PATH`` (recommended).
 For ``bash``:
 
 .. code-block:: bash
@@ -175,9 +165,8 @@ You are now ready to run your *NekRS* cases!
 Running your first simulation
 -----------------------------
 
-Several example cases ship with *nekRS* and are installed under ``$NEKRS_HOME/examples``
-To run the ``channel`` example for a simple channel flow case, copy the case folder
-to scratch location and run it as follows,
+Several example cases ship with *nekRS* and are installed under ``$NEKRS_HOME/examples``.
+To run the ``channel`` example for a simple channel flow case, copy the case folder to scratch location and run it as follows,
 
 .. code-block:: bash
 
@@ -190,18 +179,16 @@ to scratch location and run it as follows,
 
 .. note::
 
-   To avoid the conflicts between builds and for cleaner version control, it is
-   recommended to run example case outside both the source directory and install directory.
+   To avoid the conflicts between builds and for cleaner version control, it is recommended to run example case outside both the source directory and install directory.
 
 The final command launches *NekRS* with 2 MPI ranks and print output in the current terminal.
-The user may also run *nekRS* in the background as follows:
+The user may also run *NekRS* in the background as follows:
 
 .. code-block:: bash
 
    nrsbmpi channel 2
 
-This redirects output to logfiles such as ``channel.log.2`` and creates a ``logfile``
-symlink, which users can monitor the progress with:
+This redirects output to logfiles such as ``channel.log.2`` and creates a ``logfile`` symlink, which users can monitor the progress with:
 
 .. code-block:: bash
 
@@ -209,10 +196,8 @@ symlink, which users can monitor the progress with:
 
 .. tip::
 
-   *nekRS* binds 1 GPU to 1 MPI rank. If you saw an OCCA error that fails to
-   create device, you might want to either reduce the number of MPI ranks or
-   fall back to CPU backend via ``nrsbmpi channel 2 --backend serial``.
-   The detailed explaination of the argument can be found at :ref:`running`.
+   *nekRS* binds 1 GPU to 1 MPI rank. If you saw an OCCA error that fails to create device, you might want to either reduce the number of MPI ranks or fall back to CPU backend via ``nrsbmpi channel 2 --backend serial``.
+   The detailed explanation of the argument can be found at :ref:`running`.
 
 
 -----------------------------
@@ -233,7 +218,6 @@ Let’s walk through some useful batch scripts provided by *NekRS*:
 Visualization
 -----------------------------
 
-*NekRS* output (``.fld`` or ``0.f%05d``) files can be read by `VisIt <https://wci.llnl.gov/simulation/computer-codes/visit/>`_ or `ParaView <https://www.paraview.org/>`_
-via opening the case metadata file ``<case>.nek5000``.
+*NekRS* output (``.fld`` or ``0.f%05d``) files can be read by `VisIt <https://wci.llnl.gov/simulation/computer-codes/visit/>`_ or `ParaView <https://www.paraview.org/>`_ via opening the case metadata file ``<case>.nek5000``.
 This file is usually created automatically; if missing, generate it with ``nrsvis``.
 See :ref:`checkpointing_visualisation` for details.

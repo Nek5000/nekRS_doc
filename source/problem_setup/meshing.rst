@@ -3,19 +3,14 @@
 Meshing
 =======
 
-The first step in setting up a case is to have a mesh of the geometry to spatially
-discretize the simulation domain with sufficient fidelity to accurately resolve the
-physics of the case based on the end-use application with the correct boundary conditions.
+The first step in setting up a case is to have a mesh of the geometry to spatially discretize the simulation domain with sufficient fidelity to accurately resolve the physics of the case based on the end-use application with the correct boundary conditions.
 
-NekRS uses its own binary mesh format, ``.re2``, due to its small size and speed of processing
-compared to ASCII-based formats. Simple meshes can be created using the ``genbox`` tool. More
-complex spatial domains can be imported in `Gmsh's <https://gmsh.info/>`__ ``.msh``, or in the
-Exodus II (``.exo``) mesh format. Nek5000's `gmsh2nek <https://github.com/Nek5000/Nek5000/blob/master/tools/gmsh2nek/README.md>`__
-and `exo2nek <https://github.com/Nek5000/Nek5000/blob/master/tools/exo2nek/README.md>`__.
+NekRS uses its own binary mesh format, ``.re2``, due to its small size and speed of processing compared to ASCII-based formats.
+Simple meshes can be created using the ``genbox`` tool. 
+More complex spatial domains can be imported in `Gmsh's <https://gmsh.info/>`__ ``.msh``, or in the Exodus II (``.exo``) mesh format.
+Nek5000's `gmsh2nek <https://github.com/Nek5000/Nek5000/blob/master/tools/gmsh2nek/README.md>`__ and `exo2nek <https://github.com/Nek5000/Nek5000/blob/master/tools/exo2nek/README.md>`__.
 
-This part of the documentation covers some simple examples that illustrate how to use each of the
-aforementioned tools, along with a basic overview of the `mesh_t` struct that is commonly used
-in NekRS to perform operations such as modifying the mesh and setting boundary conditions.
+This part of the documentation covers some simple examples that illustrate how to use each of the aforementioned tools, along with a basic overview of the `mesh_t` struct that is commonly used in NekRS to perform operations such as modifying the mesh and setting boundary conditions.
 
 .. _meshing_nek5000_tools:
 
@@ -25,6 +20,7 @@ Using Nek5000 Meshing Tools
 ------
 genbox
 ------
+
 Simple meshes can be generated using Nek5000's meshing tool ``genbox``.
 
 Below is a simple mesh based on Nek5000's `MHD example <https://github.com/Nek5000/NekExamples/tree/master/mhd>`__.
@@ -85,16 +81,13 @@ Convert From Other Mesh Format
 ------------------
 Using ``gmsh2nek``
 ------------------
-Prior to using ``gmsh2nek``, it is recommended you compile it using a script that is already
-included within Nek5000. In addition to the compilers necessary to use `Nek5000 <https://nek5000.github.io/NekDoc/quickstart.html>`__,
-``gmsh2nek`` requires ``cmake``. Simply switch to ``path/to/Nek5000/tools``, and execute the script
-``./maketools gmsh2nek``. Once it is compiled, the executable will be available in ``Nek5000/bin``.
-If you added the ``Nek5000/bin`` folder to your ``$PATH`` environment variable as recommended in the `Nek5000 Quickstart
-Guide <https://nek5000.github.io/NekDoc/quickstart.html>`__, ``gmsh2nek`` can be used as any other utility added to your
-shell environment's ``$PATH`` or as terminal commands can be used.
+Prior to using ``gmsh2nek``, it is recommended you compile it using a script that is already included within Nek5000.
+In addition to the compilers necessary to use `Nek5000 <https://nek5000.github.io/NekDoc/quickstart.html>`__, ``gmsh2nek`` requires ``cmake``.
+Simply switch to ``path/to/Nek5000/tools``, and execute the script ``./maketools gmsh2nek``.
+Once it is compiled, the executable will be available in ``Nek5000/bin``.
+If you added the ``Nek5000/bin`` folder to your ``$PATH`` environment variable as recommended in the `Nek5000 Quickstart Guide <https://nek5000.github.io/NekDoc/quickstart.html>`__, ``gmsh2nek`` can be used as any other utility added to your shell environment's ``$PATH`` or as terminal commands can be used.
 
-Before converting a Gmsh ``.msh`` file using ``gmsh2nek``, ensure it is saved in the appropriate format using the following
-checklist:
+Before converting a Gmsh ``.msh`` file using ``gmsh2nek``, ensure it is saved in the appropriate format using the following checklist:
 
 - NekRS requires HEX20 elements. Before exporting your ``.msh`` file, create such elements throughout your mesh by clicking *Mesh->Set Order 2* in the Gmsh GUI, using the command ``SetOrder`` or passing the option ``-order 2`` to Gmsh in the terminal . Refer to the `Gmsh documentation <https://gmsh.info/doc/texinfo/gmsh.html>`__ for further details.
 
@@ -119,15 +112,15 @@ For hybrid mesh (TET4+WEDGE6, TET4+WEDGE6+HEX8, TET10+WEDGE15, TET10+WEDGE15+HEX
 This tool can also create a conjugate heat transfer mesh using two conformal meshes - one for the solid and one for the fluid domain. For
 further information on setting up sidesets and boundary conditions, see the section on `applying boundary conditions <Sidesets and applying boundary conditions>`__
 
-
 .. _meshing_cht:
 
 Conjugate Heat Transfer
 -----------------------
 
-NekRS can simulate conjugate heat transfer when provided with a mesh for the solid domain that is conformal to the fluid domain mesh. While Nek5000 required the use of its internal meshing utility ``prenek`` to merge the solid and fluid meshes,
-NekRS does not require the use of ``prenek`` (however, meshes generated by ``prenek`` then converted using ``reatore2`` are still compatible with NekRS). Instead, we recommend the use of ``gmsh2nek`` or ``exo2nek`` to merge the solid domain with
-the fluid domain when prompted. To distinguish between the mesh element types, reference the ``nrs->mesh->elementInfo[e]`` or ``nrs->mesh->o_elementInfo[e]`` objects, which store 0 for fluid domain elements, and 1 for solid domain elements.
+NekRS can simulate conjugate heat transfer when provided with a mesh for the solid domain that is conformal to the fluid domain mesh.
+While Nek5000 required the use of its internal meshing utility ``prenek`` to merge the solid and fluid meshes, NekRS does not require the use of ``prenek`` (however, meshes generated by ``prenek`` then converted using ``reatore2`` are still compatible with NekRS).
+Instead, we recommend the use of ``gmsh2nek`` or ``exo2nek`` to merge the solid domain with the fluid domain when prompted.
+To distinguish between the mesh element types, reference the ``nrs->mesh->elementInfo[e]`` or ``nrs->mesh->o_elementInfo[e]`` objects, which store 0 for fluid domain elements, and 1 for solid domain elements.
 
 TET-TO-HEX
 -----------------------
@@ -145,10 +138,8 @@ These conversions are supported for both 1st and 2nd order elements.
 Sidesets and applying boundary conditions
 ------------------------------------------
 
-Setting up sidesets correctly is important for being able to apply boundary conditions correctly
-and to avoid compile-time errors resulting from incorrect sideset definitions. For further information
-on the types of boundary conditions available, see the page that focuses entirely on the `types of boundary conditions
-available in NekRS <Boundary conditions>`__.
+Setting up sidesets correctly is important for being able to apply boundary conditions correctly and to avoid compile-time errors resulting from incorrect sideset definitions.
+For further information on the types of boundary conditions available, see the page that focuses entirely on the `types of boundary conditions available in NekRS <Boundary conditions>`__.
 
 - The sidesets are identified by NekRS on the basis of their numerical ID. ``gmsh2nek`` and ``exo2nek`` will detect any text-based IDs, but those are not used by NekRS internally.
 
