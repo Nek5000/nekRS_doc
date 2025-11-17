@@ -312,6 +312,13 @@ Dynamic mesh movement is possible using the moving mesh solver based on the Arbi
 mesh deformation diffusion parameter which controls the spatial blending of the deformation into the entire domain from the moving mesh boundary. For more details, consult the ``mv_cyl`` example. Apart from the ALE solver, the user has the option to control
 the mesh deformation themselves using ``solver = user`` in the ``[MESH]`` block, but it becomes the user's responsibility to account for the effects of the mesh movement on the physics of the fluid and any scalars being simulated.
 
+.. _meshing_hrefine:
+
+*h* Refinement
+--------------
+
+*TODO*
+
 Miscellaneous Tips
 ------------------
 

@@ -195,6 +195,7 @@ Mesh Parameters
    ``boundaryIDMapFluid``,"``<int>, <int>, ...``", "Required for conjugate heat transfer cases |br| See :ref:`boundary conditions<boundary_conditions>` for details"
    ``connectivityTol``,"``<float>``","Specifies mesh tolerance for partitioner |br| Default = ``0.2``"
    ``file``,"``""<string>""``","Optional name of mesh (``.re2``) file |br| Default is ``<case>.re2``"
+   ``hrefine``,"``<int>, ...``", "Number of splits per direction along an element |br| See :ref:`meshing_hrefine` for details."
 
 
 .. _sec:field_settings:
