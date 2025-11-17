@@ -47,8 +47,58 @@ A number of scripts ship with *NekRS* itself and are located in the ``$NEKRS_HOM
 Running on HPC Systems
 ----------------------
 
-Specific scripts and instructions for running on specific HPC systems can be found `in nekRS_HPCsupport Github repository <https://github.com/Nek5000/nekRS_HPCsupport>`_
+Specific scripts and instructions for running on specific HPC systems can be
+found in `nekRS_HPCsupport Github repository <https://github.com/Nek5000/nekRS_HPCsupport>`_.
+After installing `nekRS`, clone this repository for the latest scripts:
 
+.. code-block:: bash
+
+   git clone https://github.com/Nek5000/nekRS_HPCsupport
+   cd nekRS_HPCsupport
+
+With ``NEKRS_HOME`` pointing to your nekRS installation, run:
+
+.. code-block:: bash
+
+   ./install.sh
+
+The HPC scripts will be installed into ``$NEKRS_HOME/bin`` with a lower case
+machine-name suffix. For example, ``$NEKRS_HOME/bin/nrsqsub_frontier``.
+A typical usage looks like this:
+
+.. code-block:: bash
+
+   PROJ_ID=<project> ./nrsqsub_frontier <case> <#nodes> <hh:mm>
+
+- ``PROJ_ID``: your allocation/account
+- ``case``: case name, `.par` or `.sess` file
+- ``#nodes``: number of nodes
+- ``hh:mm``: walltime (hours:minutes).
+
+For example, this requests to run 1 node with 30 mins on Frontier:
+
+.. code-block:: bash
+
+   PROJ_ID=ABC123 ./nrsqsub_frontier turbPipe.par 1 00:30
+
+You can see the full list of environment variables via ``--help``:
+
+.. code-block:: none
+
+   $ ./nrsqsub_frontier --help
+
+   Usage: [<env-var>] $0 <par or sess file> <number of compute nodes> <hh:mm>
+
+   env-var                 Values(s)   Description / Comment
+   ------------------------------------------------------------------------------------
+   NEKRS_HOME              string      path to installation
+   PROJ_ID                 string
+   QUEUE                   string
+   CPUONLY                 0/1         backend=serial
+   RUN_ONLY                0/1         skip pre-compilation
+   BUILD_ONLY              0/1         run pre-compilation only
+   FP32                    0/1         run solver in single precision
+   OPT_ARGS                string      optional arguements e.g. "--cimode 1 --debug"
 
 .. _nekrs_signal:
 
