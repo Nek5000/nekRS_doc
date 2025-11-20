@@ -5,6 +5,8 @@ References
 
 .. [Basse] Basse, N.T. "Turbulence Intensity and the Friction Factor for Smooth- and Rough-Wall Pipe Flows," *Fluids* **2** (2017)
 
+.. [Foroozani2021] Foroozani, N., Krasnov, D., Schumacher, J., "Turbulent convection for different thermal boundary conditions at the plates", *J. Fluid. Mech.*, **907**, A27:1--22, 2021. `doi.org/10.1017/jfm.2020.830 <https://doi.org/10.1017/jfm.2020.830>`_
+
 .. [Kalitzin] Kalitzin, G., Gould, A.R.B, and Benton, J.J. "Application of Two-Equation Turbulence Models in Aircraft Design," *Proceedings of the American Institute of Aeronautics and Astronautics* (1996)
 
 .. [Kok2000] Kok, J.C. and Spekreijse, S.P. "Efficient and Accurate Implementation of the :math:`k`-:math:`\omega` Turbulence Model in the NLR Multi-Block Navier-Stokes System," *European Congress on Computational Methods in Applied Sciences and Engineering* (2000)

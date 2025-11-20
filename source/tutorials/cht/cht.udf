@@ -1,0 +1,102 @@
+static dfloat Tb;
+static dfloat Ri;
+static occa::memory o_gvec;
+
+#ifdef __okl__
+
+void udfDirichlet(bcData *bc)
+{
+  if(isField("scalar temperature")) {
+    if(bc->id == 6) bc->sScalar = -p_Tb;           //top surface
+    if(bc->id == 5) bc->sScalar = p_Tb;            //bottom surface
+  }
+}
+
+@kernel void buoForce(const dlong N,
+                      const dlong offset,
+                      @restrict const dfloat *RHO,
+                      @restrict const dfloat *g,
+                      @restrict const dfloat *S,
+                      @restrict dfloat *FU)
+{
+  for (dlong n = 0; n < N; ++n; @tile(p_blockSize, @outer, @inner)) {
+    if(n < N) {
+      const dfloat rho = RHO[n];
+      const dfloat fac = - p_Ri * rho * S[n];
+      FU[n + 0 * offset] = fac * g[0];
+      FU[n + 1 * offset] = fac * g[1];
+      FU[n + 2 * offset] = fac * g[2];
+    }
+  }
+}
+#endif
+
+void userSource(double time)
+{
+  auto mesh = nrs->fluid->mesh;
+
+  auto o_rho = nrs->fluid->o_prop.slice(1 * nrs->fluid->fieldOffset);
+
+  auto o_temp = nrs->scalar->o_solution("temperature");
+
+  buoForce(mesh->Nlocal,
+           nrs->fluid->fieldOffset,
+           o_rho,
+           o_gvec,
+           o_temp,
+           nrs->fluid->o_EXT);
+}
+
+void UDF_Setup0(MPI_Comm comm, setupAide &options)
+{
+  platform->par->extract("casedata","Tboundary",Tb);
+  platform->par->extract("casedata","Richardson",Ri);
+}
+
+void UDF_LoadKernels(deviceKernelProperties& kernelInfo)
+{
+  kernelInfo.define("p_Tb") = Tb;
+  kernelInfo.define("p_Ri") = Ri;
+}
+
+void UDF_Setup()
+{
+  nrs->userSource = &userSource;
+
+  dfloat gvec[3] = {0.0, -1.0, 0.0};        //Unit gravity vector
+  o_gvec = platform->device.malloc<dfloat>(3, gvec);
+
+  if (platform->options.getArgs("RESTART FILE NAME").empty()) {
+    {
+      auto& fluid = nrs->fluid;
+      auto mesh = fluid->mesh;
+      auto [x, y, z] = mesh->xyzHost();
+      std::vector<dfloat> U(mesh->dim * fluid->fieldOffset, 0.0);
+      for(int n = 0; n < mesh->Nlocal; n++) {
+        U[n + 0 * fluid->fieldOffset] = 0.0;
+        U[n + 1 * fluid->fieldOffset] = 0.0;
+        U[n + 2 * fluid->fieldOffset] = 0.0;
+      }
+      fluid->o_U.copyFrom(U.data(), U.size());
+    }
+
+    {
+      auto& scalar = nrs->scalar;
+      auto mesh = scalar->mesh("temperature");
+      auto [x, y, z] = mesh->xyzHost();
+      std::vector<dfloat> T(mesh->Nlocal);
+
+      for(int n = 0; n < mesh->Nlocal; n++) {
+        T[n] = 0.0; 
+
+        if(y[n] < 0.0) T[n] = Tb;
+        if(y[n] > 1.0) T[n] = -Tb;
+      }
+      scalar->o_solution("temperature").copyFrom(T.data(), T.size());
+    }
+  }
+}
+
+void UDF_ExecuteStep(double time, int tstep)
+{
+}
