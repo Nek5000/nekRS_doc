@@ -69,7 +69,7 @@ _________________________________
    :align: center
    :figclass: align-center
 
-   z-normal view of fluid (left) and solid (right) subdomains
+   Z-normal view of fluid (left) and solid (right) subdomains. Hexahedral elements from Gmsh are shown.
 
 The fluid and solid subdomains for this example are as shown above.
 The base hexahedral mesh, generated using Gmsh, is also highlighted in the figure (see next section).
