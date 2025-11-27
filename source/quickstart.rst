@@ -80,8 +80,11 @@ or by cloning the GitHub repository:
 
 .. note::
 
-   *NekRS* v25 is currently in the ``next`` branch of Github repository.
-   Make sure that you checkout the ``next`` branch as shown above.
+   The latest development version of *NekRS* is maintained on the ``next``
+   branch of the GitHub repository. Make sure you have checked out ``next`` (as
+   shown above) and verify that your local HEAD matches the latest commit listed at
+   `NekRS next branch commits <https://github.com/Nek5000/nekRS/commits/next/>`__.
+   You can inspect your local HEAD with ``git log``.
 
 Building NekRS
 ^^^^^^^^^^^^^^
