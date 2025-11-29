@@ -792,6 +792,6 @@ NekRS Files & Extensions
 
    "\*0.f0000","Nek format checkpoint file","0-based index. See :ref:`qstart_vis`"
    ".nek5000","Nek format checkpoint metadata file", "See :ref:`qstart_vis`"
-   ".bp/","ADIOS2 format checkpoint (folder)","See :ref:`postprocess_adios2`"
+   ".bp/","ADIOS2 format checkpoint (folder)","See :ref:`postproc_adios`"
    ".log.*","Log files","From ``nrsbmpi``, suffixed by rank count and rollover to ``.log1``"
    ".vtu/.vtk","VTK files","Mainly for particle data"
