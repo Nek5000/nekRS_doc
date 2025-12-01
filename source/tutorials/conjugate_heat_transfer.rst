@@ -321,7 +321,7 @@ Corresponding properties in the solid subdomain are assigned with the keys ``tra
 
   The above method for property specification in ``.par`` file is valid if properties in the subdomains are spatially and temporally constant.
   In case the user wants varying properties, they must be specified in ``.udf`` file.
-  See :ref:`cht_properties` for details.
+  See :ref:`properties_cht` for details.
 
 This case also uses some user defined parameter, specified in ``userSections`` - ``[CASEDATA]`` which are used for setting up boundary and initial conditions in ``.udf`` file.
 
