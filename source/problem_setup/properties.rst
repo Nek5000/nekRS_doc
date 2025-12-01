@@ -68,6 +68,7 @@ For :ref:`conjugate heat transfer <conjugate_heat_transfer>` cases *NekRS* provi
 The ``mesh`` key value ``fluid+solid`` informs *NekRS* that this is a conjugate heat transfer case and that the temperature equation is also being solved in the solid part of the domain.
 Subsequently, the ``transportCoeffSolid`` and ``diffusionCoeffSolid`` keys are used to assign the material properties in the solid domain.
 
+.. _variable_properties:
 
 Variable Properties
 -------------------
@@ -183,6 +184,8 @@ The ``time`` parameter is passed to the ``uservp`` function to provide the curre
       [PROBLEMTYPE]
 
       equation = navierStokes + variableViscosity
+
+.. _properties_cht:
 
 Conjugate Heat Transfer Setup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

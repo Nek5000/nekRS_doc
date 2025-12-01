@@ -1,0 +1,41 @@
+userSections = CASEDATA
+
+[GENERAL] 
+polynomialOrder = 5
+stopAt = endTime
+endTime = 200.0
+dt = targetcfl=1.0+initial=1e-3
+timeStepper = tombo2
+
+checkPointControl = simulationTime
+checkpointInterval = 10.0
+
+scalars = temperature
+
+[MESH]
+boundaryIDMap = 3, 4, 1, 2, 13, 14, 15, 11, 12                    #Maps ids to 1, 2, 3...
+boundaryIDMapFluid = 3, 4, 1, 2               #for CHT case only  #Maps ids to 1, 2, 3...
+
+[FLUID PRESSURE]
+residualTol = 1e-06
+
+[FLUID VELOCITY]
+boundaryTypeMap = zeroDirichlet, zeroDirichlet, none, none
+residualTol = 1e-08
+rho = 1.0
+mu = 1.0/3780.0                               # 1 / Re 
+
+[SCALAR TEMPERATURE]
+boundaryTypeMap = zeroNeumann, none, none, none, udfDirichlet, udfDirichlet, zeroNeumann, none, none
+residualTol = 1e-08
+mesh = fluid+solid                            #for CHT case only
+
+transportCoeff = 1.0                          #rho*cp of fluid for dimensional case
+transportCoeffSolid = 1.0                     #rho*cp of solid for dimensional case
+
+diffusionCoeff = 1.0/2646.0                   #1 / Pe          #thermal conductivity of fluid for dimensional case
+diffusionCoeffSolid = 0.2/2646.0              #alpha_r / Pe    #thermal conductivity of solid for dimensional case
+
+[CASEDATA]
+Tboundary = 1.0
+Richardson = 1.0
