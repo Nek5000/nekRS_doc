@@ -740,7 +740,7 @@ mesh convergence.
    :math:`L^2`-error also scales as :math:`\mathcal{O}(h^{N+1})`.
 
    When the solution is analytic on each element and the mesh is fixed, the
-   coefficients in a modal orthogonal-polynomial expansion decay
+   coefficients in a modal Legendre polynomial expansion decay
    geometrically. In this case, the spectral-element approximation exhibits
    (near-)exponential convergence in :math:`N`, typically written as
    :math:`\|u - u_N\| \lesssim C \exp(-\alpha N)` for some constants
