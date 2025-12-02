@@ -777,3 +777,15 @@ polynomial orders (e.g., ``N >= 5``).
    which provides a good balance between accuracy, robustness, and performance
    on modern architectures.
 
+.. note::
+
+   For convection-dominated simulations, the timestep is constrained by the
+   convective CFL condition. Because the minimum spacing of GLL points
+   scales as :math:`\Delta x_{\min} \sim h / N^2`, mesh refinement (either
+   decreasing :math:`h` or increasing :math:`N`) requires a corresponding
+   reduction of :math:`\Delta t` to maintain a fixed CFL number.
+
+   In practice, for LES and DNS where temporal resolution is critical,
+   :math:`\Delta t` is often chosen smaller than the CFL-limited value.
+
+
