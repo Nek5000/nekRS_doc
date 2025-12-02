@@ -3,260 +3,304 @@
 Physical properties
 ===================
 
+.. _properties_constant:
+
 Constant Properties
 -------------------
 
-Constant physical properties, including transport and diffusion coefficients, for all equations are specified in the :ref:`Parameter file <par_file>` under respective :ref:`field sections <sec:field_settings>`.
-Consider the following template for a :ref:`non-dimensional <nondimensional_eqs>` case setup:
+Constant physical properties, including transport and diffusion coefficients for
+all equations, are specified in the :ref:`Parameter file <par_file>` under the
+respective :ref:`field sections <sec:field_settings>`. Consider the following
+template for a :ref:`non-dimensional <nondimensional_eqs>` case setup:
 
 .. code-block::
 
    [FLUID VELOCITY]
-   density = 1.0
-   #rho = 1.0
+   density = 1.0           # or rho = 1.0
 
-   viscosity = 1./1000.0
-   #mu = 1./1000.0
-   #mu = -1000.0                   #Reynolds number
-
-   residualTol = 1e-6
+   viscosity = 1./1000.0   # or mu = 1e-3
+   #mu = -1000.0           # Reynolds number (Re = 1000)
 
    [SCALAR FOO]
-   transportCoeff = 1.0 
+   transportCoeff = 1.0
+   diffusionCoeff = 1.0/500.0   # or -500.0 for Peclet number
 
-   diffusionCoeff = 1.0/500.0
-   #diffusionCoeff = -500.0       #Peclet number
-
-   residualTol = 1e-6
-
-``density`` or ``rho`` key is used to assign the fluid density :math:`\rho` and ``viscosity`` or ``mu`` key assigns the fluid dynamic viscosity :math:`\mu`.
-``transportCoeff`` and ``diffusionCoeff`` assign the transport coefficient, :math:`\rho`, and diffusion coefficient, :math:`\lambda` for a general passive scalar equation, respectively.
-For the case where ``FOO`` is temperature field, the transport coefficient is the volumetric heat capacity, :math:`\rho c_p`, and diffusion coefficient is the thermal conductivity, :math:`k`.
+The keys ``density`` or ``rho`` assign the fluid density :math:`\rho`, and
+``viscosity`` or ``mu`` assign the fluid dynamic viscosity :math:`\mu`.
+Similarly, ``transportCoeff`` and ``diffusionCoeff`` set the transport
+coefficient and diffusion coefficient, :math:`\lambda`, for a general passive
+scalar equation. When ``FOO`` represents temperature, the transport coefficient
+corresponds to the volumetric heat capacity :math:`\rho c_p`, and
+``diffusionCoeff`` corresponds to the thermal conductivity :math:`k`.
 
 .. note::
 
-  Considering the problem is non-dimensionalized such that the characteristic length and velocity scales are unity, the Reynolds number for the problem is :math:`Re=1/\mu`.
-  Following the legacy convention in `Nek5000 <https://nek5000.github.io/NekDoc/problem_setup/case_files.html#sec-velpars>`_ the user can also specify -ve ``mu`` as shown above for non-dimensional setup, which is interpreted as :math:`Re` specification.
-  Similarly, -ve ``diffusionCoeff`` is interpreted as the Peclet number for the :ref:`non-dimensional scalar equation <intro_energy_nondim>`.
+   A **negative** value for ``mu`` or ``diffusionCoeff`` means “take the
+   reciprocal of the magnitude.” That is, if you specify a parameter as
+   ``x = -A``, *NekRS* internally uses :math:`x = 1/A`.
+   In the standard non-dimensional setup with unit density, length, and
+   velocity scales, this lets you write, for example, ``mu = -Re`` to request
+   :math:`\mu = 1/Re`. Similarly, ``diffusionCoeff = -Pe`` is interpreted as
+   :math:`\lambda = 1/Pe` for the scalar equation.
+   See :ref:`non-dimensional scalar equation <intro_energy_nondim>`.
 
-Conjugate Heat Transfer Setup
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   If your problem is not scaled so that :math:`\rho = 1` (or :math:`L = U = 1`),
+   you should specify :math:`\mu` and :math:`\lambda` directly. Using ``-Re`` or
+   ``-Pe`` will **not** correspond to the usual definitions
+   :math:`Re = \rho U L / \mu` and :math:`Pe = \rho c_p U L / \lambda`.
 
-For :ref:`conjugate heat transfer <conjugate_heat_transfer>` cases *NekRS* provides a convenient way of defining both fluid and solid properties for the temperature equation in the :ref:`Parameter file <par_file>` as shown,
-
-.. code-block:: 
-
-   [FLUID VELOCITY]
-   boundaryTypeMap = ... , ... , ...
-   density = 1.0
-   viscosity = 1./1000.0
-   residualTol = 1e-6
-
-   [SCALAR TEMPERATURE]
-   boundaryTypeMap = ... , ... , ... , ... , ...
-
-   mesh = fluid+solid
-
-   transportCoeff = 1.0 
-   diffusionCoeff = 1.0/500.0       #non-dimensional fluid thermal conductivity
-
-   transportCoeffSolid = 1.0
-   diffusionCoeffSolid = 1.0/5.0    #non-dimensional solid thermal conductivity
-
-   residualTol = 1e-6
-
-The ``mesh`` key value ``fluid+solid`` informs *NekRS* that this is a conjugate heat transfer case and that the temperature equation is also being solved in the solid part of the domain.
-Subsequently, the ``transportCoeffSolid`` and ``diffusionCoeffSolid`` keys are used to assign the material properties in the solid domain.
-
-.. _variable_properties:
+.. _properties_variable:
 
 Variable Properties
 -------------------
 
-Spatially and/or temporally varying transport and diffusion properties can be specified in the ``.udf`` file.
-To set these up, begin with assigning a user function pointer to the internal *NekRS* member pointer ``nrs->userProperties`` as follows
+Spatially and/or temporally varying transport and diffusion properties are
+specified in the ``.udf`` file. To enable this, first assign a user function
+pointer to the internal *NekRS* member pointer ``nrs->userProperties``:
 
-.. code-block:: c++
+.. code-block:: cpp
 
    void UDF_Setup()
    {
-      nrs->userProperties = &uservp;
+     nrs->userProperties = &uservp;
    }
 
-This instructs *NekRS* to look for the function ``uservp`` in ``.udf`` file for property specification.
-In ``uservp`` the properties must be populated in the corresponding ``o_prop`` field property arrays which hold both the diffusion and transport coefficients for all :term:`GLL` points.
-The user will need to write a custom kernel function in order to populate these arrays.
-A template example is as follows:
+This instructs *NekRS* to call the function ``uservp`` in the ``.udf`` file for
+property specification on each time step. Inside ``uservp``, properties must be
+written into the corresponding ``o_prop`` arrays, which store both diffusion and
+transport coefficients at all :term:`GLL` points. Typically, you do this with a
+custom kernel. A template example is:
 
 .. code-block:: c++
 
    #ifdef __okl__
-     @kernel void fillProp(const dlong Nelements,
-                           const dfloat Re,
-                           const dfloat Pe,
-                           @ restrict dfloat* MUE,
-                           @ restrict dfloat* RHO,
-                           @ restrict dfloat* K,
-                           @ restrict dfloat* RHOCP)
-     {
-        for (dlong e = 0; e < Nelements; ++e; @outer(0)) {
-          for (int n = 0; n < p_Np; ++n; @inner(0)) {
-             const int id = e * p_Np + n;
+   @kernel void fillProp(const dlong Nelements,
+                         const dfloat Re,
+                         const dfloat Pe,
+                         @ restrict dfloat* MUE,
+                         @ restrict dfloat* RHO,
+                         @ restrict dfloat* K,
+                         @ restrict dfloat* RHOCP)
+   {
+     for (dlong e = 0; e < Nelements; ++e; @outer(0)) {
+       for (int n = 0; n < p_Np; ++n; @inner(0)) {
+          const int id = e * p_Np + n;
 
-             MUE[id] = 1./Re;
-             K[id] = 1./Pe;
+          MUE[id]   = 1.0 / Re;
+          K[id]     = 1.0 / Pe;
 
-             RHO[id] = 1.0;
-             RHOCP[id] = 1.0;
-          }
-        }
+          RHO[id]   = 1.0;
+          RHOCP[id] = 1.0;
+       }
      }
+   }
    #endif
-
-   static int updateProperties = 1;
 
    void uservp(double time)
    {
-      auto& fluid = nrs->fluid;
-      auto& scalar = nrs->scalar;
+     auto& fluid = nrs->fluid;
+     auto& scalar = nrs->scalar;
 
-      if(updateProperties) {
-        const dfloat Re = 1000.0;     //Reynolds number
-        const dfloat Pe = 500.0;      //Peclet number
+     static int updateProperties = 1;
 
-        auto o_mue = fluid->o_prop.slice(0 * fluid->fieldOffset);
-        auto o_rho = fluid->o_prop.slice(1 * fluid->fieldOffset);
+     if (updateProperties) {
+       const dfloat Re = 1000.0;     // Reynolds number
+       const dfloat Pe = 500.0;      // Peclet number
 
-        auto o_k = scalar->o_prop.slice(0 * scalar->fieldOffset());
-        auto o_rhocp = scalar->o_prop.slice(1 * scalar->fieldOffset());
+       auto o_mue = fluid->o_prop.slice(0 * fluid->fieldOffset);
+       auto o_rho = fluid->o_prop.slice(1 * fluid->fieldOffset);
 
-        fillProp(fluid->mesh->Nelements,
-                 Re,
-                 Pe,
-                 o_mue,
-                 o_rho,
+       auto o_k = scalar->o_prop.slice(0 * scalar->fieldOffsetSum);
+       auto o_rhocp = scalar->o_prop.slice(1 * scalar->fieldOffsetSum);
+
+       fillProp(fluid->mesh->Nelements,
+                Re,
+                Pe,
+                o_mue,
+                o_rho,
                 o_k,
                 o_rhocp);
 
-        updateProperties = 0;
-      }
+       // Properties are constant in this example. Update only once.
+       updateProperties = 0;
+     }
    }
 
-The above example illustrates how the properties are filled in the ``o_prop`` arrays for fluid and temperature (or any scalar) fields.
-The fluid property array is referenced using the ``nrs->fluid`` object while the scalar property with the ``nrs->scalar`` object.
-Note that the diffusion coefficients and transport coefficients are stored contiguously in the respective ``o_prop`` :term:`OCCA` arrays.
-As shown above, the pointer to the coefficient arrays can be conveniently isolated using the ``slice`` operation on ``o_prop``.
-The ``slice`` function takes an argument to specify the memory location in :term:`OCCA` array.
-The extent or size of each coefficient array is given by ``fieldOffset`` (equal to total number of :term:`GLL` points on a processor). 
-Thus, the pointer to fluid dynamic viscosity is located at the first memory location in ``fluid->o_prop(0 * fluid->fieldOffset)`` and the fluid density is located at ``fluid->fieldOffset``, i.e., ``fluid->o_prop.slice(1 * fluid->fieldOffset)``.
-Similar slicing operations can pe performed to isolate scalar diffusion and transport coefficient arrays, as shown above.
+This example shows how to fill the ``o_prop`` arrays for fluid and scalar
+(temperature) properties. The fluid property array is accessed via the
+``nrs->fluid`` object, and the scalar property array via ``nrs->scalar``.
 
-The ``fillProp`` custom kernel above provides a template example for how to fill the property arrays. 
-Although the kernel specifies constant tranport coefficient and diffusion coefficient value for both fluid and scalar properties, it can be customized to include spatial dependence based on target application.
+Diffusion and transport coefficients are stored contiguously in the respective
+:term:`OCCA` ``o_prop`` arrays. The ``slice`` operation is used to obtain device
+pointers to individual coefficient fields. For the fluid, a single field is
+present, so ``fieldOffset`` is sufficient. For scalars, there may be multiple
+fields, so it is safer to use ``fieldOffsetSum``. The following excerpts from
+``solver/fluid/fluidSolver.cpp`` and ``solver/scalar/scalarSolver.cpp`` show how
+these arrays are allocated:
 
-Since the properties are not temporally varying in the above example, the relevant code in ``uservp`` is placed in an ``if(updateProperties)`` condition block which populates the property arrays only once in the simulation, avoiding unnecessary repetitive operations.
-It is important to note that *NekRS* will call ``uservp`` at the beginning of each time step in the simulation.
-The ``time`` parameter is passed to the ``uservp`` function to provide the current time step for the user, in case temporally varying properties need to be specified. 
+.. code-block:: cpp
+
+   // fluid
+   o_prop = platform->device.malloc<dfloat>(2 * nrs->fluid->fieldOffset);
+   o_mue = o_prop.slice(0 * nrs->fluid->fieldOffset, nrs->fluid->mesh->Nlocal);
+   o_rho = o_prop.slice(1 * nrs->fluid->fieldOffset, nrs->fluid->mesh->Nlocal);
+
+   // scalars (possibly multiple scalar fields)
+   o_prop = platform->device.malloc<dfloat>(2 * nrs->scalar->fieldOffsetSum);
+   o_diff = o_prop.slice(0 * nrs->scalar->fieldOffsetSum, nrs->scalar->fieldOffsetSum);
+   o_rho = o_prop.slice(1 * nrs->scalar->fieldOffsetSum, nrs->scalar->ieldOffsetSum);
+
+In many cases it is more convenient (and less error-prone) to use the helper
+accessors for the corresponding coefficients:
+
+.. code-block:: cpp
+
+   // fluid properties
+   auto o_mue  = nrs->fluid->o_diffusionCoeff();
+   auto o_rho  = nrs->fluid->o_transportCoeff();
+
+   // scalar "temperature" properties
+   auto o_k     = nrs->scalar->o_diffusionCoeff("temperature");
+   auto o_rhocp = nrs->scalar->o_transportCoeff("temperature");
+
+The ``fillProp`` kernel above assigns constant coefficients, but in practice it
+can be generalized to depend on space (and, if desired, time) based on the
+target application. Because the example uses constant properties, the call is
+guarded by ``if (updateProperties)`` so that the properties are filled only
+once. *NekRS* will still call ``uservp`` at the beginning of each time step,
+and the ``time`` argument is available if temporally varying properties are
+required.
 
 .. note::
 
-   If variable properties are being assigned in ``.udf`` file, the corresponding keys in ``.par`` file are optional.
-   Any constant value assigned in ``.par`` file will be over-written by user-defined kernel in ``uservp``.
+   If variable properties are assigned in the ``.udf`` file, *NekRS* will first
+   initialize them from the ``.par`` file and then overwrite them with values
+   provided by ``uservp``. In other words, constants in ``.par`` serve only as
+   defaults.
 
-   .. code-block::
-
-      [FLUID VELOCITY]
-      residualTol = 1e-6
-      # density = 1.0        #optional for variable property specification
-      # mu = 1./1000.0       #optional for variable property specification
-
-      [SCALAR TEMPERATURE]
-      residualTol = 1e-6
-      # transportCoeff = 1.0        #optional for variable property specification
-      # diffusionCoeff = 1.0/500.0  #optional for variable property specification
-    
 .. warning::
 
-   If the fluid dynamic viscosity is spatially varying, the ``equation`` key must be included in ``PROBLEMTYPE`` section in ``.par`` file to specify *NekRS* to use full stress formulation by adding the ``variableViscosity`` value to the key:
+   If the fluid dynamic viscosity is spatially varying, the ``equation`` key
+   must be set in the ``[PROBLEMTYPE]`` section of the ``.par`` file to enable
+   the full stress formulation:
 
    .. code-block::
 
       [PROBLEMTYPE]
-
       equation = navierStokes + variableViscosity
 
 
 .. _properties_cht:
 
-Conjugate Heat Transfer Setup
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Conjugate Heat Transfer
+-----------------------
 
-As for the constant property case, setting :ref:`conjugate heat transfer <conjugate_heat_transfer>` case with variable properties requires special consideration in ``.udf`` file.
-The following template illustrates the setup for a typical :term:`CHT` case.
+For CHT cases (See :ref:`conjugate heat transfer turorial <conjugate_heat_transfer>`)
+*NekRS* provides a convenient way to define both fluid and solid properties for
+the temperature equation in the :ref:`Parameter file <par_file>`:
+
+.. code-block::
+
+   [FLUID VELOCITY]
+   density   = 1.0
+   viscosity = 1./1000.0
+
+   [SCALAR TEMPERATURE]
+   mesh = fluid+solid
+
+   transportCoeff      = 1.0         # fluid:  rho c_p
+   diffusionCoeff      = 1.0 / 500.0 # fluid:  k
+
+   transportCoeffSolid = 1.0         # solid:  rho c_p
+   diffusionCoeffSolid = 1.0 / 5.0   # solid:  k
+
+The ``mesh`` key value ``fluid+solid`` informs *NekRS* that this is a conjugate
+heat-transfer case and that the temperature equation is solved in both the
+fluid and solid regions of the domain. For each scalar, the user can choose
+whether it is solved only in the fluid (default) or in both fluid and solid via
+the corresponding ``mesh`` key in its field section. Keys that end with
+``Solid`` (e.g., ``transportCoeffSolid``, ``diffusionCoeffSolid``) specify the
+corresponding material properties in the solid region.
+
+As for variable properties, they can be set in ``uservp`` in a similar way. For
+example:
 
 .. code-block:: c++
 
-   static int updateProperties = 1;
-
    #ifdef __okl__
-                           
-    @kernel void cFill(const dlong Nelements,
-                   const dfloat CONST1,
-                   const dfloat CONST2,
-                   @ restrict const dlong *eInfo,
-                   @ restrict dfloat *QVOL)
-    {
-      for (dlong e = 0; e < Nelements; ++e; @outer(0)) {
-        const dlong solid = eInfo[e];
-        for (int n = 0; n < p_Np; ++n; @inner(0)) {
-          const int id = e * p_Np + n;
-          QVOL[id] = CONST1;
-          if (solid) {
-            QVOL[id] = CONST2;
-          }
-        }
-      }
-    }
+   @kernel void cFill(const dlong Nelements,
+                      const dfloat CONST1,
+                      const dfloat CONST2,
+                      @ restrict const dlong *eInfo,
+                      @ restrict dfloat *QVOL)
+   {
+     for (dlong e = 0; e < Nelements; ++e; @outer(0)) {
+       const dlong solid = eInfo[e];
+       for (int n = 0; n < p_Np; ++n; @inner(0)) {
+         const int id = e * p_Np + n;
+
+         QVOL[id] = CONST1;
+         if (solid) {
+           QVOL[id] = CONST2;
+         }
+       }
+     }
+   }
    #endif
 
    void uservp(double time)
    {
-      auto& fluid = nrs->fluid;
-      auto& scalar = nrs->scalar;
+     auto& fluid = nrs->fluid;
+     auto& scalar = nrs->scalar;
 
-      if(updateProperties) {
-        const dfloat rho = 1.0;   
-        const dfloat mue = 1.0 / 1000.0;
+     // Properties are constant in this example. Fill them only once.
+     static int updateProperties = 1;
 
-        //fluid
-        const auto o_mue = fluid->o_prop.slice(0 * fluid->fieldOffset);
-        const auto o_rho = fluid->o_prop.slice(1 * fluid->fieldOffset);
-        cFill(fluid->mesh->Nelements, mue, 0, fluid->mesh->o_elementInfo, o_mue);
-        cFill(fluid->mesh->Nelements, rho, 0, fluid->mesh->o_elementInfo, o_rho);
+     if (updateProperties) {
 
-        //temperature
-        const dfloat rhoCpFluid = rho * 1.0;
-        const dfloat conFluid = mue;
-        const dfloat rhoCpSolid = rhoCpFluid * 0.1;
-        const dfloat conSolid = 10 * conFluid;
+       const dfloat rho = 1.0;
+       const dfloat mue = 1.0 / 1000.0;
 
-        auto mesh = scalar->mesh("temperature"); 
+       { //fluid
+         auto mesh = fluid->mesh;
+         const auto o_mue = fluid->o_prop.slice(0 * fluid->fieldOffset);
+         const auto o_rho = fluid->o_prop.slice(1 * fluid->fieldOffset);
 
-        const auto o_con = scalar->o_diffusionCoeff("temperature");
-        const auto o_rhoCp = scalar->o_transportCoeff("temperature");
+         // For the fluid mesh there are no solid elements, so CONST2 is unused (0.0).
+         cFill(mesh->Nelements, mue, 0.0, mesh->o_elementInfo, o_mue);
+         cFill(mesh->Nelements, rho, 0.0, mesh->o_elementInfo, o_rho);
+       }
 
-        cFill(mesh->Nelements, conFluid, conSolid, mesh->o_elementInfo, o_con);
-        cFill(mesh->Nelements, rhoCpFluid, rhoCpSolid, mesh->o_elementInfo, o_rhoCp);
-      }
-      updateProperties = 0;
+       { //temperature
+         auto mesh = scalar->mesh("temperature");
+         const dfloat rhoCpFluid = rho * 1.0;
+         const dfloat conFluid = mue;
+         const dfloat rhoCpSolid = rhoCpFluid * 0.1;
+         const dfloat conSolid = 10.0 * conFluid;
+
+         const auto o_con = scalar->o_diffusionCoeff("temperature");
+         const auto o_rhoCp = scalar->o_transportCoeff("temperature");
+
+         // Use mesh->o_elementInfo to distinguish fluid (0) vs solid (1) elements
+         cFill(mesh->Nelements, conFluid, conSolid, mesh->o_elementInfo, o_con);
+         cFill(mesh->Nelements, rhoCpFluid, rhoCpSolid, mesh->o_elementInfo, o_rhoCp);
+       }
+
+       updateProperties = 0;
+     }
    }
 
    void UDF_Setup()
    {
-      nrs->userProperties = &uservp;
+     nrs->userProperties = &uservp;
    }
 
-In the above example a common custom kernel ``cfill`` is written to fill out all property arrays for fluid and temperature fields.
-The essential difference between the :term:`CHT` case setup and a non-CHT case is the use of ``mesh->o_elementInfo`` in the custom kernel.
-This array marks the elements in the ``mesh`` that reside in the solid part of the domain and, therefore, can be easily used to differentiate fluid and solid elements in the ``cfill`` kernel as shown above. 
-Note that when the fluid mesh object is passed to cfill, i.e., ``fluid->mesh->o_elementInfo``, there are no solid elements in this mesh object and hence the ``if(solid)`` condition block in ``cfill`` kernel is not executed.
+In this example, a single custom kernel ``cFill`` populates all property arrays
+for the fluid and temperature fields. The key ingredient in the :term:`CHT`
+setup is ``mesh->o_elementInfo``, which flags solid elements in a given mesh.
+For the fluid mesh (``fluid->mesh``), all entries are zero, so ``cFill`` always
+uses the "fluid" values. For the conjugate temperature mesh
+(e.g., ``scalar->mesh("temperature")``), ``o_elementInfo`` distinguishes fluid
+and solid elements, allowing the same kernel to assign different coefficients in
+the two regions.
+
