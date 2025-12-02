@@ -137,7 +137,7 @@ restart options, controlled by the par-key ``startFrom`` (see
 
    - ADIOS2 bp5 format:
      You can inspect the metadata with the ``bpls`` executable. See
-     :ref:`postprocess_adios2` for usage.
+     :ref:`postproc_adios` for usage.
 
 Users can also manually load checkpoint files in the ``.udf`` by calling
 ``nrs->restartFromFiles`` inside functions such as ``UDF_Setup`` or
