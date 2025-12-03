@@ -3,6 +3,125 @@
 Other Resources
 ===============
 
+.. _occa_memory:
+
+OCCA Memory
+-----------
+
+*TODO*
+
+``deviceMemory``
+``occa::memory``
+memory Pool
+
+.. _mesh_t:
+
+Mesh Class (``mesh_t``)
+-----------------------
+
+Each solver in *NekRS* owns a corresponding ``mesh_t`` object.
+
+- For the fluid (velocity / pressure) solver, the mesh is stored in
+  ``nrs->fluid->mesh`` (often also referred to as the fluid mesh).
+- For scalar fields (e.g., temperature), meshes are accessed through the
+  scalar, for example,
+  ``nrs->scalar->mesh("temperature")`` or by index via
+  ``nrs->scalar->mesh(idx)``, where the ``idx`` can be accessed via
+  ``idx = nrs->scalar->nameToIndex.find("temperature")``
+
+In most cases, all scalar meshes point to the same fluid-domain mesh. However,
+in CHT setups, selected scalars (such as temperature)
+can live on a mesh that covers both fluid and solid regions.
+(See :ref:`conjugate heat transfer turorial <conjugate_heat_transfer>`)
+
+*NekRS* performs a domain decomposition to distribute the mesh across MPI ranks
+with approximately equal degrees of freedom, in order to balance the
+computational load. As a result, the members of ``mesh_t`` correspond to the
+**local** portion of the mesh assigned to a given MPI rank. For example,
+``Nelements`` is the number of elements owned locally by that rank.
+
+In the summary table below, we refer generically to the ``mesh`` object
+(e.g., ``mesh->Nelements``) without distinguishing whether it is the fluid
+mesh, a scalar mesh, or a CHT mesh. The meaning of each member is the same,
+but applied to the local partition held by that particular solver instance.
+
+If there are both host and device, the device one will have prefix ``o_``
+
+.. table:: Important ``mesh_t`` members
+   :name:  mesh_data
+
+   =========================== ================================== ================== =================================================
+   Variable Name               Size                               Host or Device?           Meaning
+   =========================== ================================== ================== =================================================
+   ``dim = 3``                 1                                  Host               spatial dimension of mesh
+   ``Nfaces = 6``              1                                  Host               number of faces per element
+   ``Nverts = 8``              1                                  Host               number of vertices per element
+   ``NfaceVertices = 4``       1                                  Host               number of vertices per face
+   ``N``                       1                                  Host               polynomial order for each dimension
+   ``Nq = N + 1``              1                                  Host               number of quadrature points in each direction
+   ``Np = Nq * Nq * Nq``       1                                  Host               number of quadrature points per element
+   ``Nfp = Nq * Nq``           1                                  Host               number of quadrature points per face
+   ``Nfields``                 1                                  Host               number of fields passed to the PDE solver
+   ``Nelements``               1                                  Host               number of local elements owned by current process
+   ``Nlocal = Nelements * Np`` 1                                  Host               number of local quadrature points owned by current process
+   ``NboundaryFaces``          1                                  Host               *total* number of faces on a boundary (rank sum)
+
+   ``solid``                   1                                  Host               whether contains solid domain (1 = CHT)
+   ``elementInfo``             ``Nelements``                      Both               phase of element (0 = fluid, 1 = solid)
+
+   ``EToV``                    ``Nelements * Nverts``             Host               element to vertex connectivity
+   ``EToE``                    ``Nelements * Nfaces``             Host               element to element connectivity
+   ``EToF``                    ``Nelements * Nfaces``             Host               element to local face connectivity
+   ``EToP``                    ``Nelements * Nfaces``             Host               element to partition/process connectivity
+   ``EToB``                    ``Nelements * Nfaces``             Both               mapping of elements to type of boundary condition
+   ``vmapM``                   ``Nelements * Nfaces * Nfp``       Both               quadrature point index for faces on boundaries
+
+   ``ogs``                     ``ogs_t``                          ogs_t              OCCA gather/scatter operation handle
+   ``oogs``                    ``oogs_t``                         oogs_t             (overlapped) OCCA gather/scatter operation handle
+
+   ``o_x``                     ``Nelements * Np``                 device             :math:`x`-coordinates of physical quadrature points
+   ``o_y``                     ``Nelements * Np``                 device             :math:`y`-coordinates of physical quadrature points
+   ``o_z``                     ``Nelements * Np``                 device             :math:`z`-coordinates of physical quadrature points
+
+   ``gllz``                    ``Nq``                             Both               1D GLL points
+   ``gllw``                    ``Nq``                             Both               1D GLL quadratule weights
+   ``D``                       ``Nq * Nq``                        Both               1D Differentiation matrix
+
+   ``o_LMM (or o_Jw)``         ``Nlocal``                         Device             lumped mass matrix
+   ``o_invLMM (or o_invAJw)``  ``Nlocal``                         Device             inverse of assembled lumped mass matrix
+   ``o_vgeo``                  ``Nlocal * 12``                    Device             volume geometric factors
+   ``o_sgeo``                  ``Nelements * Nfaces * Nfp * 19``  Device             surface geometric factors
+   ``o_ggeo``                  ``Nlocal * 7``                     Device             second-order volumetric geometric factors
+   =========================== ================================== ================== =================================================
+
+.. note::
+
+   For the mapping from reference coordinates :math:`(r,s,t)` to physical
+   coordinates :math:`(x,y,z)`, the geometric factors are stored in three main
+   device arrays:
+
+   - ``o_vgeo``: volume geometric factors
+
+     - the 9 components :math:`\partial (r,s,t) / \partial (x,y,z)`,
+     - the Jacobian :math:`J`,
+     - the weighted Jacobian :math:`J w`,
+     - and its inverse :math:`1 / (J w)`.
+
+   - ``o_sgeo``: surface geometric factors (on face nodes).
+     Only 18 of the 19 stored entries are currently used:
+
+     - the 3 components of the outward unit normal,
+     - 6 components for the tangential and bitangential vectors,
+     - the surface Jacobian and weighted surface Jacobian,
+     - 3 entries for :math:`n \cdot \nabla r`, :math:`n \cdot \nabla s`,
+       :math:`n \cdot \nabla t`,
+     - 3 entries for averaged normal/tangential data.
+
+   - ``o_ggeo``: geometric factors for the 3D Laplacian
+
+     - the 6 unique components of the symmetric metric tensor :math:`G_{ij}`,
+     - and the weighted Jacobian :math:`J w`.
+
 .. _linalg:
 
 Linear Algebra Functions (linAlg)
@@ -128,90 +247,6 @@ and its entries ordered as
    \partial_x u_z,\; \partial_y u_z,\; \partial_z u_z.
 
 
-.. _mesh_t:
-
-Mesh Class (``mesh_t``)
------------------------
-
-This section describes commonly-used data structures related to the mesh, the first of which is ``mesh_t``.
-For the fluid domain, all mesh information is stored
-in the ``nrs->mesh`` object, while for scalars such as temperature, mesh information is stored on the
-``nrs->cds->mesh`` object. These meshes differ in cases such as conjugate heat transfer, where the
-velocity mesh is distinct from the temperature mesh. NekRS performs domain decomposition to ensure
-an even split of the mesh across the number of specified MPI tasks, in order to keep the computational load
-across all MPI tasks as even as possible. As a result, the mesh gets split into pieces with approximately
-equal degrees of freedom across each MPI task. The ``mesh_t`` members therefore correspond to the local
-section of the mesh accessed by the given MPI task. For example, ``Nelements`` corresponds to the local
-number of elements allotted to the given MPI task.
-
-To keep the following summary table general, the variable names are referred to simply as living on
-the ``mesh`` object, without any differentiation between whether that ``mesh`` object is the object on
-``nrs`` or ``nrs->cds``.
-
-.. table:: Important ``mesh_t`` members
-   :name:  mesh_data
-
-   ================== ============================ ================== =================================================
-   Variable Name      Size                         Host or Device?           Meaning
-   ================== ============================ ================== =================================================
-   ``comm``           1                            Host               MPI communicator
-   ``device``         1                            Host               backend device
-   ``dim``            1                            Host               spatial dimension of mesh
-   ``elementInfo``    ``Nelements``                Host               phase of element (0 = fluid, 1 = solid)
-   ``EToB``           ``Nelements * Nfaces``       Both               mapping of elements to type of boundary condition
-   ``N``              1                            Host               polynomial order for each dimension
-   ``NboundaryFaces`` 1                            Host               *total* number of faces on a boundary (rank sum)
-   ``Nelements``      1                            Host               number of local elements owned by current process
-   ``Nfaces``         1                            Host               number of faces per element
-   ``Nfp``            1                            Host               number of quadrature points per face
-   ``Np``             1                            Host               number of quadrature points per element
-   ``rank``           1                            Host               parallel process rank
-   ``size``           1                            Host               size of MPI communicator
-   ``Nfields``        1                            Host               Number of fields passed to the PDE solver
-   ``cht``            1                            Host               conjugate heat transfer status (0 = off, 1 = on)
-   ``vmapM``          ``Nelements * Nfaces * Nfp`` Both               quadrature point index for faces on boundaries
-   ``x``              ``Nelements * Np``           Both               :math:`x`-coordinates of physical quadrature points
-   ``y``              ``Nelements * Np``           Both               :math:`y`-coordinates of physical quadrature points
-   ``z``              ``Nelements * Np``           Both               :math:`z`-coordinates of physical quadrature points
-   ``Nvgeo``          ``<chk>``                    <chk>              Volumetric geometric factors
-   ``Nggeo``          ``<chk>``                    <chk>              Second-order volumetric geometric factors
-   ``vertexNodes``    ``<chk>``                    <chk>              Vertex nodes' indices
-   ``edgeNodes``      ``<chk>``                    <chk>              Edge nodes' indices
-   ``edgeNodes``      ``<chk>``                    <chk>              List of element reference interpolation nodes on element faces
-   ``o_LMM``          ``<chk>``                    Device             Lumped mass matrix
-   ``U``              ``Nelements*Np``             Both               Mesh velocity (often used with ALE solver)
-   ``D``              ``Nelements*Np``             Both               1D Differentiation matrix
-   ``o_vgeo``         ``<chk>``                    Device             Volume geometric factors
-   ``o_sgeo``         ``<chk>``                    Device             Surface geometric factors
-   ================== ============================ ================== =================================================
-
-
-The second most important structure is ``bcData``. It is often referred to in the ``oudf`` kernels to set boundary conditions.
-Its members are typically accessed on the device, and the kernels for setting boundary conditions will iterate over all the GLL points
-on a given boundary, setting these values appropriately for each point. The following table details what the most important members
-of this structure mean.
-
-.. table:: Important ``bcData`` members
-   :name:  bcData_members
-
-   ===================== =======================================================
-   Variable Name                Meaning
-   ===================== =======================================================
-   ``idM``                Element's mesh ID (?)
-   ``fieldOffset``        Size of a field (offset for a given component)
-   ``id``                 Sideset ID
-   ``time``               Current time
-   ''x/y/z``              X/Y/Z coordinates
-   ``nx/ny/nz``           X/Y/Z normals
-   ``t1x/t1y/t1z``        X/Y/Z tangents
-   ``t2x/t2y/t2z``        X/Y/Z bitangents
-   ``p/u/v/w``            Pressure and the 3 velocity components
-   ``scalarID``           ID of the scalar as per the ``par`` file
-   ``s``                  Scalar value
-   ``flux``               Flux value for flux BC
-   ``meshu/meshv/meshw``  Mesh velocity components (used in ALE framework)
-   ``trans/diff``         Mesh transport/diffusion coefficients (ALE framework)
-   ===================== =======================================================
 
 
 .. _nek5000_tools:
