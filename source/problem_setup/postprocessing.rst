@@ -191,6 +191,8 @@ are available. Through the legacy ``.usr`` file, you can also reuse existing
 recommended to combine these existing APIs before implementing your own
 :term:`OKL` kernels.
 
+.. _postproc_qoi_array:
+
 Array Operators
 ^^^^^^^^^^^^^^^
 
