@@ -415,8 +415,6 @@ rate and rotation rate, based on the current velocity, use
 Aero-Forces
 ^^^^^^^^^^^
 
-*TODO*: need careful revision in terms of notation, math, sign, dimensional units, etc
-
 For aerodynamic post-processing it is convenient to decompose the surface
 traction into a tangential (shear) part and a normal (pressure) part. For a
 surface :math:`S` with unit outward normal :math:`\vec n`, the corresponding
@@ -424,12 +422,13 @@ force contributions can be written as
 
 .. math::
 
-   \vec F_{\parallel} = \int_S \boldsymbol{\tau} \cdot \vec n \, dS,
+   \vec F_{\parallel} = \int_S \boldsymbol{t}_f \; dS,
    \qquad
-   \vec F_{\perp}     = - \int_S p \, \vec n \, dS,
+   \vec F_{\perp}     = - \int_S p \, \vec n \; dS,
 
-where :math:`\boldsymbol{\tau}` is the viscous stress tensor and :math:`p` is
-the pressure. For a Newtonian fluid, the viscous stress tensor is
+where :math:`p` is the pressure and :math:`\boldsymbol{t}_f` is the
+tangential (friction) traction defined below. The viscous stress tensor
+for a Newtonian fluid is given by
 
 .. math::
 
@@ -441,7 +440,22 @@ where :math:`\mu` is the dynamic viscosity, :math:`\lambda` is the bulk
 viscosity, :math:`\delta_{ij}` is the Kronecker delta, and
 :math:`\varepsilon_{ij}` is the strain-rate tensor defined earlier. For
 incompressible flow :math:`\nabla \cdot \vec{u} = 0`, so the second term
-vanishes and :math:`\tau_{ij} = 2 \mu \varepsilon_{ij}`.
+vanishes and :math:`\tau_{ij} = 2 \mu \varepsilon_{ij}`. The viscous
+traction, :math:`\boldsymbol{t}_v`, is the viscous contribution to the
+surface force and is obtained by projecting the viscous stress tensor
+onto the surface normal,
+
+.. math::
+
+   \boldsymbol{t}_v = \boldsymbol{\tau} \cdot \vec n,
+
+and the tangential (friction) traction is obtained by removing its
+normal component,
+
+.. math::
+
+   \boldsymbol{t}_f
+   = \boldsymbol{t}_v - (\boldsymbol{t}_v \cdot \vec n)\, \vec n.
 
 The net aerodynamic force is then
 
