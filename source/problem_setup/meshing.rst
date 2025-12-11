@@ -335,7 +335,7 @@ as in the ``channel`` example:
       enddo
    enddo
 
-   return 
+   return
    end
 
 .. _meshing_nek5000_tools:
@@ -356,7 +356,7 @@ genbox
 Many simple meshes can start from one or more boxes and then be deformed later
 in ``usrdat2`` in the ``.usr`` file. For example, here is ``gabls1/input.box``:
 
-.. code-block:: none 
+.. code-block:: none
    :linenos:
 
    base.rea
@@ -442,22 +442,22 @@ detailed usage.
 
 .. _meshing_convert:
 
-Convert External Meshes                                                         
------------------------                                                         
+Convert External Meshes
+-----------------------
 
-Mesh conversion is handled by *Nek5000* tools. See :ref:`nek5000_tools` and the 
-`Nek5000 documentation <https://nek5000.github.io/NekDoc/tools.html>`__ for     
-details. The table below summarizes commonly used external meshing software,    
-their file formats, and the corresponding conversion tools.                     
+Mesh conversion is handled by *Nek5000* tools. See :ref:`nek5000_tools` and the
+`Nek5000 documentation <https://nek5000.github.io/NekDoc/tools.html>`__ for
+details. The table below summarizes commonly used external meshing software,
+their file formats, and the corresponding conversion tools.
 
-.. csv-table:: Common meshing software, formats, and *Nek5000* tools            
-   :header: "Software", "Format", "Nek5000 Tool"                                
-   :widths: 40, 30, 30                                                          
+.. csv-table:: Common meshing software, formats, and *Nek5000* tools
+   :header: "Software", "Format", "Nek5000 Tool"
+   :widths: 40, 30, 30
 
-   "Gmsh", ".msh (version 2)", "gmsh2nek"                                       
-   "CGNS", ".cgns", "cgns2nek"                                                  
-   "Cubit", ".exo", "exo2nek"                                                   
-   "ANSYS / Fluent / ICEM", ".exo", "exo2nek"                                   
+   "Gmsh", ".msh (version 2)", "gmsh2nek"
+   "CGNS", ".cgns", "cgns2nek"
+   "Cubit", ".exo", "exo2nek"
+   "ANSYS / Fluent / ICEM", ".exo", "exo2nek"
    "Pointwise", ".exo", "exo2nek"
 
 .. note::
@@ -466,7 +466,7 @@ their file formats, and the corresponding conversion tools.
    are stored in ``bc(5,f,e,ifield)`` (see :ref:`mesh_setup_sidesets`). Tools
    such as ``gmsh2nek`` and ``exo2nek`` can read any text-based IDs from the
    source mesh, but these names are not used internally by *NekRS*.
-                                                                                
+
 .. _meshing_convert_gmsh2nek:
 
 Gmsh (``gmsh2nek``)
@@ -664,16 +664,16 @@ See the table and diagram below for an example.
 
 .. container:: two-column
 
-   .. container:: left   
+   .. container:: left
 
       .. _fig-hrefine_restart:
-      
+
       .. figure:: ../_static/img/hrefine/restart.png
          :width: 600px
          :align: center
          :figclass: align-center
          :alt: hrefine-restart
-      
+
          Restart diagram for *h*-refinement. Starting from the top-left ``a.re2``
          (green), each simulation (blue) dumps a checkpoint file (white) whose header
          shows the stored *h*-schedule. After writing a new ``b.re2``, the schedule is
@@ -684,7 +684,7 @@ See the table and diagram below for an example.
       .. csv-table:: Supported restart scenarios
          :header: "","Sim 1","Sim 2","Sim 3","Sim 4"
          :widths: 12,22,22,22,22
-      
+
          "fld 0","ok","ok","Not supported","Not supported"
          "fld 1","ok","ok","Not supported","Not supported"
          "fld 2","NA","ok","Not supported","Not supported"
@@ -740,11 +740,22 @@ mesh convergence.
    :math:`L^2`-error also scales as :math:`\mathcal{O}(h^{N+1})`.
 
    When the solution is analytic on each element and the mesh is fixed, the
-   coefficients in a modal Legendre polynomial expansion decay
-   geometrically. In this case, the spectral-element approximation exhibits
-   (near-)exponential convergence in :math:`N`, typically written as
+   coefficients in a modal Legendre polynomial expansion
+   :math:`u(x) = \sum_{k=0}^\infty\ \hat{u}_k\ \phi_k(x)` decay geometrically
+   with respect to the polynomial degree. That is, there exist constants
+   :math:`C>0` and :math:`0 < \rho < 1`, independent of the mesh and
+   :math:`N`, such that
+
+   .. math::
+
+      |\hat{u}_k| \le C \,\rho^k
+      \qquad \text{for all } k \ge 0.
+
+   The geometric decay of the modal coefficient implies that the trucation
+   error decreases exponentially with :math:`N`, typically written as
    :math:`\|u - u_N\| \lesssim C \exp(-\alpha N)` for some constants
-   :math:`C, \alpha > 0`.
+   :math:`C, \alpha > 0`, in an appropiate norm (e.g., :math:`L^2` or
+   :math:`H^1`).
 
 High-order meshes can also tolerate element shapes that would be considered low
 quality in many low-order finite-element solvers. Depending on the physics,
@@ -780,7 +791,7 @@ polynomial orders (e.g., ``N >= 5``).
 .. note::
 
    For convection-dominated simulations, the timestep is constrained by the
-   convective CFL condition. Because the minimum spacing of GLL points
+   **convective CFL condition**. Because the minimum spacing of GLL points
    scales as :math:`\Delta x_{\min} \sim h / N^2`, mesh refinement (either
    decreasing :math:`h` or increasing :math:`N`) requires a corresponding
    reduction of :math:`\Delta t` to maintain a fixed CFL number.
