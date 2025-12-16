@@ -152,8 +152,8 @@ unweighted version.
 .. note::
 
    In the finite element setting, let :math:`u` be a field, :math:`v` a test
-   function, and :math:`F` a differential operator. The strong form appears in
-   integrals of the type
+   function, and :math:`F` a differential operator. The (weighted) strong form
+   appears in integrals of the type
 
    .. math::
 
@@ -183,12 +183,12 @@ unweighted version.
    The test functions :math:`v` no longer appear explicitly in the algebraic
    system.
 
-Table :numref:`tab:opsem` lists the ``opSEM`` functions and their corresponding
-discrete operators. The following notation is used:
+:numref:`tab:opsem` lists the ``opSEM`` functions and their corresponding
+discrete operators. The following notations are used:
 
 - :math:`D_x, D_y, D_z`: first-order derivative operators in the
   :math:`x`, :math:`y`, and :math:`z` directions.
-- :math:`B`: multiplication by the (lumped) mass matrix.
+- :math:`B`: multiplication by the diagonal (lumped) mass matrix.
 - :math:`G`: gather–scatter averaging,
   :math:`G = M^{-1} Q Q^{T}`, where :math:`Q` is the finite-element gather
   matrix, :math:`Q^{T}` is the scatter, and :math:`M` is a diagonal matrix of
@@ -234,7 +234,7 @@ For example, the following call computes the gradient of the velocity field:
 .. code-block:: cpp
 
    auto mesh = nrs->meshV;
-   auto o_gradU = opSEM::strongGradVec(mesh, nrs->fieldOffset, nrs->fluid->o_U);
+   auto o_gradU = opSEM::strongGradVec(mesh, nrs->fieldOffset, nrs->fluid->o_U); // default: avg = true
 
 The output ``o_gradU`` is a device buffer from the memory pool, with type
 ``deviceMemory<dfloat> o_out(mesh->dim * mesh->dim * nrs->fieldOffset);``
