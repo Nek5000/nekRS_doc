@@ -409,26 +409,31 @@ rate and rotation rate, based on the current velocity, use
    // SO[id + 8 * offset] = 0.5 * (dwdy - dvdz);     // ω_yz
    auto o_SijOij = nrs->strainRotationRate();
 
-
 .. _postproc_qoi_aero_force:
 
 Aero-Forces
 ^^^^^^^^^^^
 
-For aerodynamic post-processing it is convenient to decompose the surface
-traction into a tangential (shear) part and a normal (pressure) part. For a
-surface :math:`S` with unit outward normal :math:`\vec n`, the corresponding
-force contributions can be written as
+The hydrodynamic force on a surface :math:`S` with unit normal
+:math:`\vec n_S` (pointing into the fluid) is obtained by integrating the
+Cauchy stress,
 
 .. math::
 
-   \vec F_{\parallel} = \int_S \boldsymbol{t}_f \; dS,
-   \qquad
-   \vec F_{\perp}     = - \int_S p \, \vec n \; dS,
+   \vec F = \int_S \boldsymbol{\sigma} \cdot \vec n_S \, dS,
 
-where :math:`p` is the pressure and :math:`\boldsymbol{t}_f` is the
-tangential (friction) traction defined below. The viscous stress tensor
-for a Newtonian fluid is given by
+where the stress tensor is decomposed as
+:math:`\boldsymbol{\sigma} = \boldsymbol{\tau} - p \mathbf{I}`, with
+:math:`p` the pressure and :math:`\boldsymbol{\tau}` the viscous stress tensor.
+Accordingly,
+
+.. math::
+
+   \vec F = \vec F_v + \vec F_p, \qquad
+   \vec F_v = \int_S \boldsymbol{\tau} \cdot \vec n_S \, dS, \qquad
+   \vec F_p = - \int_S p \, \vec n_S \, dS.
+
+For a Newtonian fluid,
 
 .. math::
 
@@ -438,34 +443,23 @@ for a Newtonian fluid is given by
 
 where :math:`\mu` is the dynamic viscosity, :math:`\lambda` is the bulk
 viscosity, :math:`\delta_{ij}` is the Kronecker delta, and
-:math:`\varepsilon_{ij}` is the strain-rate tensor defined earlier. For
-incompressible flow :math:`\nabla \cdot \vec{u} = 0`, so the second term
-vanishes and :math:`\tau_{ij} = 2 \mu \varepsilon_{ij}`. The viscous
-traction, :math:`\boldsymbol{t}_v`, is the viscous contribution to the
-surface force and is obtained by projecting the viscous stress tensor
-onto the surface normal,
+:math:`\varepsilon_{ij}` is the strain-rate tensor defined earlier.
+For incompressible flow :math:`\nabla \cdot \vec{u} = 0`, so the second
+term vanishes and :math:`\tau_{ij} = 2 \mu \varepsilon_{ij}`.
+In the numerical implementation, the computational domain is the fluid
+region outside the surface, and :math:`\vec n` denotes the outward
+normal of this domain. On :math:`S` we then have
+:math:`\vec n_S = - \vec n`, so the force can equivalently be written as
 
 .. math::
 
-   \boldsymbol{t}_v = \boldsymbol{\tau} \cdot \vec n,
+   \vec F_v = - \int_S \boldsymbol{\tau}\cdot\vec n\, dS,
+   \qquad
+   \vec F_p = \int_S p\, \vec n\, dS.
 
-and the tangential (friction) traction is obtained by removing its
-normal component,
-
-.. math::
-
-   \boldsymbol{t}_f
-   = \boldsymbol{t}_v - (\boldsymbol{t}_v \cdot \vec n)\, \vec n.
-
-The net aerodynamic force is then
-
-.. math::
-
-   \vec F = \vec F_{\parallel} + \vec F_{\perp}
-
-The helper class ``AeroForce`` stores these two contributions as Cartesian
-3-vectors and provides simple accessors for post-processing. An ``AeroForce``
-instance can be obtained from the setup interface ``nrs->aeroForces``:
+The helper class ``AeroForce`` collects these contributions as Cartesian
+3-vectors and exposes simple accessors for post-processing.
+An instance is obtained via ``nrs->aeroForces``:
 
 .. code-block:: cpp
 
@@ -477,19 +471,17 @@ instance can be obtained from the setup interface ``nrs->aeroForces``:
    auto o_Sij   = nrs->strainRate();
    auto forces  = nrs->aeroForces(o_bidWall, o_Sij);
 
-   // Each of the following is a std::array<dfloat, 3>
-   auto viscousForce  = forces->tangential();   // viscous (shear) contribution
-   auto pressureForce = forces->normal();       // pressure contribution
-   auto totalForce    = forces->forceEff();     // viscous + pressure
+   // Each is a std::array<dfloat, 3>
+   auto viscousForce  = forces->viscous();
+   auto pressureForce = forces->pressure();
+   auto totalForce    = forces->total(); // pressureForce + viscousForce
 
 .. note::
 
    **Drag and lift**
 
-   Let :math:`\hat{\boldsymbol{e}}_D` and :math:`\hat{\boldsymbol{e}}_L` denote
-   unit vectors in the drag and lift directions (e.g., aligned with the
-   freestream and its normal). The scalar drag and lift forces are then obtained
-   by projecting the total force onto these directions
+   Let :math:`\hat{\mathbf e}_D` and :math:`\hat{\mathbf e}_L` be unit vectors
+   defining drag and lift directions. Their scalar values follow from projections
 
    .. math::
 
@@ -498,14 +490,14 @@ instance can be obtained from the setup interface ``nrs->aeroForces``:
       L = \vec F \cdot \hat{\boldsymbol{e}}_L,
 
    Here :math:`\vec F` can be taken as the total force, the viscous part
-   :math:`\vec F_{\parallel}`, or the pressure part :math:`\vec F_{\perp}`,
-   depending on whether total, viscous, or pressure contributions are desired.
+   :math:`\vec F_v`, or the pressure part :math:`\vec F_p`, depending on
+   whether total, viscous, or pressure contributions are desired.
 
    **Drag and lift coefficients**
 
-   Given a reference area :math:`A_{\text{ref}}` and a reference velocity
-   (typically freestream) :math:`U_\infty`, the corresponding drag and lift
-   coefficients are
+   Given a reference area :math:`A_{\text{ref}}`, a reference velocity
+   (typically freestream) :math:`U_\infty` and a suitable reference density,
+   the corresponding drag and lift coefficients are
 
    .. math::
 
@@ -513,28 +505,42 @@ instance can be obtained from the setup interface ``nrs->aeroForces``:
       \qquad
       C_L = \frac{L}{\tfrac{1}{2}\,\rho\,U_\infty^2\,A_{\text{ref}}},
 
-   where :math:`\rho` is a suitable reference density (for example, taken from
-   the field attached via ``AeroForce::rho``).
-
 .. tip::
 
-   One can use the viscous (tangential) force to compute the friction velocity
-   :math:`u_\tau`. For example, assuming the first component corresponds to the
-   wall-parallel direction and a reference density :math:`\rho_{\text{ref}}`,
+   **Skin friction and friction velocity**
+
+   The viscous force can be further decomposed into its tangential component,
+   represented by the skin-friction traction :math:`\boldsymbol{t}_f`. In
+   continuous form,
+
+   .. math::
+
+      \boldsymbol{t}_f
+        = (\boldsymbol{\tau}\cdot\vec n)
+          - \big[(\boldsymbol{\tau}\cdot\vec n)\cdot\vec n\big]\vec n,
+
+   where :math:`\vec n` is the wall-normal unit vector (its sign does not matter
+   for the tangential projection).  
+   The helper ``forces->friction()`` returns the integrated tangential viscous
+   force over the selected boundary.
+
+   For example, in the ``ktauChannel`` case, assuming the first component of the
+   returned vector corresponds to the streamwise (wall-parallel) direction and
+   using a reference density :math:`\rho_{\text{ref}}`:
 
    .. code-block:: cpp
 
-      auto viscousForce = forces->tangential(); // std::array<dfloat, 3>
+      auto viscousForce = forces->friction(); // std::array<dfloat, 3>
       auto utau = std::sqrt(std::abs(viscousForce[0]) / (rhoRef * areaWall));
 
-   In nondimensional simulations with :math:`\rho_{\text{ref}} = 1`, this
-   reduces to
+   For nondimensional simulations with :math:`\rho_{\text{ref}} = 1`:
 
    .. code-block:: cpp
 
-      auto utau = std::sqrt(std::abs(forces->tangential()[0]) / areaWall);
+      auto utau = std::sqrt(std::abs(forces->friction()[0]) / areaWall);
 
-   where ``areaWall`` can be computed via :ref:`postproc_qoi_integrals`.
+   The wall area ``areaWall`` can be obtained via :ref:`postproc_qoi_integrals`.
+
 
 .. _postproc_qoi_qcriterion:
 
