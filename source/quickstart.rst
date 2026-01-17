@@ -10,11 +10,14 @@ Before You Begin...
 -------------------
 
 This guide assumes basic familiarity with Linux (or another Unix-like OS) and common ``bash`` commands.
-The steps below target building *nekRS* on a local machine (desktop or laptop). A GPU is not required.
+The steps below target building *nekRS* on a local machine (desktop or laptop). A **GPU is not required.**
 
 .. note::
 
-   Specific instructions for installing on select :term:`HPC` systems can be found `here <https://github.com/Nek5000/nekRS_HPCsupport>`_.
+   Specific instructions for installing on select :term:`HPC` systems can be
+   found `here <https://github.com/Nek5000/nekRS_HPCsupport>`_. We recommend
+   becoming familiar with the standard installation first before using these
+   HPC-specific instructions.
 
 Before you begin, note the following **requirements** for *NekRS*:
 
@@ -77,8 +80,11 @@ or by cloning the GitHub repository:
 
 .. note::
 
-   *NekRS* v25 is currently in the ``next`` branch of Github repository.
-   Make sure that you checkout the ``next`` branch as shown above.
+   The latest development version of *NekRS* is maintained on the ``next``
+   branch of the GitHub repository. Make sure you have checked out ``next`` (as
+   shown above) and verify that your local HEAD matches the latest commit listed at
+   `NekRS next branch commits <https://github.com/Nek5000/nekRS/commits/next/>`__.
+   You can inspect your local HEAD with ``git log``.
 
 Building NekRS
 ^^^^^^^^^^^^^^
@@ -220,4 +226,4 @@ Visualization
 
 *NekRS* output (``.fld`` or ``0.f%05d``) files can be read by `VisIt <https://wci.llnl.gov/simulation/computer-codes/visit/>`_ or `ParaView <https://www.paraview.org/>`_ via opening the case metadata file ``<case>.nek5000``.
 This file is usually created automatically; if missing, generate it with ``nrsvis``.
-See :ref:`checkpointing_visualisation` for details.
+See :ref:`postproc_checkpoint` for details.

@@ -677,6 +677,7 @@ There are three main limitations for the *NekRS* mesh:
 
    Lower-dimensional (2D/1D) setups can run on a 3D mesh by enforcing zero-gradient boundary conditions on all solution variables in the out-of-interest directions.
    Material properties and forcing terms must likewise be constant (or zero-gradient) in those directions.
+   See :ref:`mesh_setup_connectivity` for examples.
 
 The header of a ``.re2`` file is a single 80-character line. 
 While minor variants exist across versions, they all encode: ``(version) (total elements) (dimension) (fluid elements)``.
@@ -792,6 +793,6 @@ NekRS Files & Extensions
 
    "\*0.f0000","Nek format checkpoint file","0-based index. See :ref:`qstart_vis`"
    ".nek5000","Nek format checkpoint metadata file", "See :ref:`qstart_vis`"
-   ".bp/","ADIOS2 format checkpoint (folder)",""
+   ".bp/","ADIOS2 format checkpoint (folder)","See :ref:`postproc_adios`"
    ".log.*","Log files","From ``nrsbmpi``, suffixed by rank count and rollover to ``.log1``"
    ".vtu/.vtk","VTK files","Mainly for particle data"

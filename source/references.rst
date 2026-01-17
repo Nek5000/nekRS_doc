@@ -40,3 +40,6 @@ References
 .. [Wilcox] Wilcox, D.C. "Turbulence Modeling for CFD," *DCW Industries* (2006)
 
 .. [Wilcox2008] Wilcox, David C. "Formulation of the k-ω turbulence model revisited." *AIAA journal 46, no. 11: 2823-2838. `doi.org/10.2514/1.36541 <https://doi.org/10.2514/1.36541>`* (2008)
+
+
+.. [Hunt1988] Hunt, Julian CR, Alan A. Wray, and Parviz Moin. "Eddies, streams, and convergence zones in turbulent flows." *Studying turbulence using numerical simulation databases, 2. Proceedings of the 1988 summer program* (1988)
