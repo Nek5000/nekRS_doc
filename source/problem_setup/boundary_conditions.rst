@@ -31,11 +31,13 @@ using:
 
    nrsman par
 
-The boundary conditions are also shown below:
+.. dropdown:: Output of boundary-condition keys in ``parHelp.txt``
 
-.. literalinclude:: ../_includes/parHelp.txt
-   :language: none
-   :lines: 1-3, 154-182
+   The boundary conditions are also shown below:
+
+   .. literalinclude:: ../_includes/parHelp.txt
+      :language: none
+      :lines: 1-3, 154-182
 
 Assuming the :ref:`numeric ID <mesh_setup_sidesets_numeric_id>` tags are defined,
 mesh boundaries can be mapped to boundary conditions using ``boundaryIDMap``. As
@@ -286,10 +288,15 @@ A generic example template of user-defined Dirichlet and Neumann boundary condit
     |                  | ``"scalar XXX"``                    | `ethier <https://github.com/Nek5000/nekRS/tree/next/examples/ethier>`_             |
     +------------------+-------------------------------------+------------------------------------------------------------------------------------+    
 
+
+TODO robin
+
 .. _periodic_boundary:
 
 Internal / Periodic
 """""""""""""""""""
+
+TODO: flowrate, ffz
 
 ``None`` is assigned to the ``boundaryTypeMap`` when an internal boundary condition is required or a periodic boundary condition has been set as part of the mesh.
 Periodicity is linked to the mesh connectivity and is handled by the meshing tool.
@@ -304,13 +311,19 @@ Periodicity is linked to the mesh connectivity and is handled by the meshing too
 Special Cases
 -------------
 
+
+.. _turbinflow:
+
+Turbulent Inflow
+""""""""""""""""
+
+(for LES/DNS)
+random perturbed (tripping)
+
 .. _recycling:
 
-Turbulent Inflow (for LES/DNS)
-"""""""""""""""""""""""""""""""
-
 Velocity Recycling
-^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""
 
 NekRS offers an in-built technique to impose fully developed turbulent inflow conditions.  
 It comprises recycling the velocity from an offset surface in the domain interior to the inlet boundary resulting in a quasi-periodic domain. 
