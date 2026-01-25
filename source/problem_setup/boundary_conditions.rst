@@ -3,14 +3,29 @@
 Boundary conditions
 ===================
 
-Boundary conditions for each mesh boundary should normally be set in the :ref:`par_file`, using the ``boundaryTypeMap`` parameter.
-This is used within the ``FLUID VELOCITY`` or ``SCALAR FOO`` sections to set the boundary conditions of the respective fields.
+Boundary surfaces should already be named or tagged by the meshing software and
+stored in the mesh beforehand. See :ref:`mesh_setup_sidesets` for details on how
+*NekRS* tags mesh surfaces and how users configure these mapping manually.
+
+Boundary conditions for each mesh boundary are typically specified ub the
+:ref:`par_file` using the ``boundaryTypeMap`` parameter. This mapping is
+referenced within the ``FLUID VELOCITY`` or ``SCALAR FOO`` sections to define
+the boundary conditions of the corresponding fields.
+
 
 Available Types
 ---------------
 
-All available boundary conditions are summarised in the command line help function for *NekRS*.
-The user can find these in the *NekRS* manual using:
+In this section, we focus on using **numeric IDs** via ``boundaryTypeMap``.
+For Nek5000-style string-based ``cbc`` tags, these are handled automatically,
+and users can directly set boundary values in ``udfDirichlet`` or
+``udfNeumann``. See :ref:`mesh_setup_sidesets` and
+`Nek5000 Boundary Conditions <https://nek5000.github.io/NekDoc/problem_setup/BCs.html>`_
+for details.
+
+All available boundary condition types are summarized in the *NekRS*
+command-line help. Users can find the complete list in the *NekRS* manual
+using:
 
 .. code-block:: bash
 
@@ -22,17 +37,17 @@ The boundary conditions are also shown below:
    :language: none
    :lines: 1-3, 154-182
 
-Assigning boundary condition types in *NekRS* is handled differently depending on if you are using a third-party meshing tool such as *GMSH*, *ICEM*, *Cubit*, etc. and importing the mesh with *Nek5000* :ref:`tool scripts <nek5000_tools>`, such as ``gmsh2nek``, ``exo2nek`` or ``cgns2nek``, or if you are using a mesh generated with a Nek-native tool, such as `Genbox <https://nek5000.github.io/NekDoc/tools/genbox.html?highlight=genbox>`_.
-
-Boundary conditions are typically assigned in the :ref:`Parameter file <par_file>`.
-To setup cases that use third party meshes, where boundaries are identified by a unique integer or boundary ID, you will need to use the ``boundaryIDMap`` parameter in the ``MESH`` section to identify the mesh boundaries, which are then mapped to the desired boundary condition in field section using the ``boundaryTypeMap`` key.
-As an example, consider an inlet-outlet pipe flow, where three boundary conditions are applied to the mesh boundary IDs 389 (``udfDirichlet`` - inlet), 231 (``zeroNeumann`` - outlet), 4 (``zeroDirichlet`` - walls).
-The corresponding boundary condition assignment in ``.par`` file will be as follows,
+Assuming the :ref:`numeric ID <mesh_setup_sidesets_numeric_id>` tags are defined,
+mesh boundaries can be mapped to boundary conditions using ``boundaryIDMap``. As
+an example, consider an inlet--outlet pipe flow with three boundary IDs:
+389 (inlet, ``udfDirichlet``), 231 (outlet, ``zeroNeumann``), and
+4 (walls, ``zeroDirichlet``). The corresponding assignments in the ``.par`` file
+are:
 
 .. code-block::
 
    [MESH]
-   boundaryIDMap = 389, 231, 4  #boundary IDs assigned by 3rd party mesher
+   boundaryIDMap = 389, 231, 4  # boundary IDs from the mesher
 
    [FLUID VELOCITY]
    boundaryTypeMap = udfDirichlet, zeroNeumann, zeroDirichlet
@@ -40,14 +55,20 @@ The corresponding boundary condition assignment in ``.par`` file will be as foll
 
 .. note::
 
-  For conjugate heat transfer cases, it is necessary to also specify the velocity boundary map, ``boundaryIDMapFluid``, separately to identify the interface conformal walls between the fluid and solid mesh.
-  Extending the above example, assume that the pipe is enclosed in a solid annular insulated jacket where the boundary ID 4 corresponds to the conformal wall between the solid and fluid mesh, while remaining insulated walls of the solid mesh have boundary IDs 10, 20 and 30.
+   For conjugate heat transfer (:term:`CHT`) cases, the fluid velocity boundary
+   IDs must also be specified separately using ``boundaryIDMapFluid`` to identify
+   conformal fluid--solid interfaces.
 
-    .. code-block::
+   Extending the example above, assume the pipe is surrounded by a solid annular
+   jacket. Boundary ID 4 corresponds to the conformal fluid--solid wall, while
+   the remaining insulated solid walls have boundary IDs 10, 20, and 30. The
+   corresponding configuration is:
+
+   .. code-block::
 
        [MESH]
-       boundaryIDMap = 389, 231 ,4                    #boundary IDs assigned by 3rd party mesher
-       boundaryIDMapFluid = 10, 20, 30, 389, 231, 4   #boundary IDs assigned by 3rd party mesher
+       boundaryIDMap = 389, 231 ,4
+       boundaryIDMapFluid = 10, 20, 30, 389, 231, 4
 
        [FLUID VELOCITY]
        boundaryTypeMap = udfDirichlet, zeroNeumann, zeroDirichlet
@@ -55,11 +76,9 @@ The corresponding boundary condition assignment in ``.par`` file will be as foll
        [SCALAR TEMPERATURE]
        boundaryTypeMap = zeroNeumann, zeroNeumann, zeroNeumann, udfDirichlet, zeroNeumann, none
 
-For meshes generated using the Nek-native meshing tool `Genbox <https://nek5000.github.io/NekDoc/tools/genbox.html?highlight=genbox>`_, the boundary conditions are typically assigned using three character code in the ``.box`` file itself and these are stored in the generated mesh (``.re2``) file.
-*NekRS* will automatically read the boundary conditions from this mesh and explicit boundary condition specification in ``.par`` file is not required.
-
-From an implementation standpoint, the available boundary conditions in *NekRS* can be broadly classified into three major categories.
-These are discussed in the following sections.
+From an implementation standpoint, the available boundary conditions in *NekRS*
+can be broadly classified into three major categories. These are discussed in
+the following sections.
 
 ZeroDirichlet / ZeroNeumann Type Conditions
 """""""""""""""""""""""""""""""""""""""""""
