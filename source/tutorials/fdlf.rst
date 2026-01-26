@@ -105,8 +105,8 @@ The tool will produce binary mesh and boundary data file ``box.re2`` which shoul
 
 .. tip:: 
    If ``genbox`` cannot be located by your shell, check to make sure the ``Nek5000/bin`` directory is in your path.
-   For help see `here <https://nek5000.github.io/NekDoc/quickstart.html#sec-path>`_.
-   A detailed explaination of the *Nek5000* box format can be found `here <https://nek5000.github.io/NekDoc/tools/genbox.html>`_
+   For help see `Nek5000 setting PATH <https://nek5000.github.io/NekDoc/quickstart.html#sec-path>`_.
+   A detailed explaination of the *Nek5000* box format can be found `Nek5000 Doc genbox <https://nek5000.github.io/NekDoc/tools/genbox.html>`_
 
 .. _fdlf_par:
 
@@ -226,7 +226,7 @@ The ``bcData`` is an internally defined ``struct`` which contains useful variabl
 .. note::
 
   The boundary condition routines ``udfDirichlet`` and ``udfNeumann`` are called for every GLL point by the *NekRS* solver.
-  For a list of all variables available through the ``bcData`` struct see :ref:`here <bcdata>`.
+  For a list of all variables available through the ``bcData`` struct see :ref:`here <boundary_conditions_user_bc>`.
 
 The ``isField`` function is used to identify the particular governing equation being currently solved. 
 ``"fluid velocity"`` is the string identifier for the velocity solver, while ``"scalar xxxx"`` is the string identifier for the scalar equation, where ``xxxx`` corresponds to the scalar string identifier specified in the ``.par`` file, as shown in the :ref:`previous section <fdlf_par>`, which is ``temperature`` in this case.
