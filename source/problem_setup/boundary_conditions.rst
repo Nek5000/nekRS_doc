@@ -189,7 +189,7 @@ their legacy aliases, and the corresponding ``bcData`` variables to be set.
 
    Scalar, ``udfDirichlet``, ``t`` / ``inlet``, ``bc->sScalar``
    Scalar, ``udfNeumann``, ``f`` / ``flux``, "``bc->fluxScalar`` :math:`(\lambda \nabla s \cdot \mathbf{\hat e_n})`"
-   Scalar, ``udfRobin``, ``c``,  ``bc->h`` ``bc->sInfScalar`` |br| :math:`(\lambda \nabla s \cdot \mathbf{\hat e_n}) = h (s - s_{\infty})`
+   Scalar, ``udfRobin``, ``c`` (Newton's cooling), ``bc->h`` ``bc->sInfScalar`` |br| :math:`(\lambda \nabla s \cdot \mathbf{\hat e_n}) = h (s - s_{\infty})`
    Scalar, ``interpolation``, ``int``, ``bc->sScalar``
 
    Geom, ``udfDirichlet`` |br| ``udfDirichlet+moving``, ``mv``, "``bc->uxGeom`` |br| ``bc->uyGeom`` |br| ``bc->uzGeom``"
