@@ -1,6 +1,6 @@
 .. _boundary_conditions:
 
-Boundary Conditions
+Boundary conditions
 ===================
 
 
@@ -50,7 +50,7 @@ as needed. See :ref:`boundary_conditions_user_bc` for details.
 
 .. _boundary_conditions_basics:
 
-Basic Boundary Conditions
+Basic boundary conditions
 -------------------------
 
 All available boundary condition types are summarized in the *NekRS*
@@ -77,7 +77,7 @@ using:
    389 (inlet, ``udfDirichlet``), 231 (outlet, ``zeroNeumann``), and
    4 (walls, ``zeroDirichlet``). The corresponding ``.par`` file entries are:
 
-   .. code-block::
+   .. code-block:: ini
 
       [MESH]
       boundaryIDMap = 389, 231, 4  # boundary IDs from the mesher
@@ -97,7 +97,7 @@ using:
    the remaining insulated solid walls have boundary IDs 10, 20, and 30. The
    corresponding configuration is:
 
-   .. code-block::
+   .. code-block:: ini
 
        [MESH]
        boundaryIDMap = 389, 231 ,4
@@ -155,7 +155,7 @@ summarized in the table below, using the following notation:
 
    Scalar, ``zeroNeumann``,"``I`` / ``insulated``", :math:`\lambda \nabla s \cdot \mathbf{\hat{e}_n} = 0`
 
-   Geom, ``zerodirichlet``, "``w`` / ``v`` / ``wall` / ``inlet``", zero movement
+   Geom, ``zerodirichlet``, "``w`` / ``v`` / ``wall`` / ``inlet``", zero movement
 
 
 .. _boundary_conditions_user_bc:
@@ -184,7 +184,7 @@ their legacy aliases, and the corresponding ``bcData`` variables to be set.
    :class: tall
 
    Fluid, ``udfDirichlet``, ``v`` / ``inlet``, "``bc->uxFluid`` |br| ``bc->uyFluid`` |br| ``bc->uzFluid``"
-   Fluid, ``zeroDirichletN / udfNeumann``, ``traction`` / ``shl``, "``bc->tr1`` :math:`((\boldsymbol{\underline{\tau}} \cdot \mathbf{\hat e_n}) \cdot \mathbf{\hat e_t})` |br| ``bc->tr2`` :math:`((\boldsymbol{\underline{\tau}} \cdot \mathbf{\hat e_n}) \cdot \mathbf{\hat e_b})` |br| :math:`\mathbf{u} \cdot \mathbf{\hat e_n} = 0` (enforced internally)"
+   Fluid, ``zeroDirichletN / udfNeumann``, ``shl`` / ``traction``, "``bc->tr1`` :math:`((\boldsymbol{\underline{\tau}} \cdot \mathbf{\hat e_n}) \cdot \mathbf{\hat e_t})` |br| ``bc->tr2`` :math:`((\boldsymbol{\underline{\tau}} \cdot \mathbf{\hat e_n}) \cdot \mathbf{\hat e_b})` |br| :math:`\mathbf{u} \cdot \mathbf{\hat e_n} = 0` (enforced internally)"
    Fluid, ``interpolation``, ``int``, "``bc->uxFluid`` |br| ``bc->uyFluid`` |br| ``bc->uzFluid``"
 
    Scalar, ``udfDirichlet``, ``t`` / ``inlet``, ``bc->sScalar``
@@ -253,6 +253,22 @@ their legacy aliases, and the corresponding ``bcData`` variables to be set.
       ``usrwrk``,``@globalPtr const dfloat*``, pointer to user work array
       "``uxFluidInt`` , ``uyFluidInt`` , ``uzFluidInt``", ``dfloat``, interpolated velocity components (NekNek)
       ``sScalarint``, ``dfloat``, interpolated scalar value (NekNek)
+
+   .. warning::
+
+      Only a subset of solution fields is provided as input through ``bcData``
+      in a given boundary callback.
+
+      For example, when setting a fluid Dirichlet BC, scalar values are not
+      accessible through ``bc->sScalar``. If a boundary condition requires
+      coupling to other fields, use ``bc->usrwrk`` to pass the required data
+      and populate it explicitly in advance.
+
+      Only the following inputs are available:
+
+      - ``uxFluid``, ``uyFluid``, ``uzFluid`` for fluid pressure and scalar
+        related BCs
+      - ``sScalar`` for scalar Neumann BC
 
 
 .. dropdown:: Field identifier ``isField()``
@@ -328,60 +344,125 @@ their legacy aliases, and the corresponding ``bcData`` variables to be set.
 
 .. _boundary_conditions_per_bc:
 
-Internal / Periodic BC
+Internal / periodic BC
 """"""""""""""""""""""
 
-TODO: flowrate, ffz
+Since every boundary ID must be assigned in ``boundaryTypeMap``, internal
+interfaces or surfaces that do not require a physical boundary condition should
+be assigned ``none``.
 
-``None`` is assigned to the ``boundaryTypeMap`` when an internal boundary condition is required or a periodic boundary condition has been set as part of the mesh.
-Periodicity is linked to the mesh connectivity and is handled by the meshing tool.
+Periodic boundary conditions are defined by the mesh connectivity and handled by
+the meshing tool. Tagging a boundary as ``periodic`` in ``boundaryTypeMap`` only
+indicates intent and the actual periodic pairing is determined by the mesh.
 
 .. note::
 
-   Periodic pairs are part of the mesh connectivity stored in the ``.re2``
-   file. Simply changing a boundary condition from ``wall`` to ``periodic`` in
-   ``.par`` will most likely not work. See :ref:`mesh_setup_connectivity` for
-   details.
+   Periodic pairs are part of the mesh connectivity stored in the ``.re2`` file.
+   Simply changing a boundary condition from ``wall`` to ``periodic`` in
+   ``.par`` will likely not work. See :ref:`mesh_setup_connectivity` for details.
+
+To sustain a prescribed flow rate in an axis-aligned periodic channel, a
+pressure gradient can be applied either through forcing in ``userf`` or by using
+the built-in flow-rate control mechanism (see the ``turbPipePeriodic`` example).
+The latter is configured in the ``[GENERAL]`` section of the ``.par`` file using
+``constFlowRate = meanVelocity=1.0 + direction=Z``.
+The applied pressure-gradient scaling is reported in the log file, for example
+in the final column shown below:
+
+.. code-block:: bash
+
+   $ grep flowrate logfile
+
+   step=10       flowrate            : uBulk0 1.00e+00  uBulk 1.00e+00  err 2.44e-15  scale 3.13313e-02
+
 
 .. _boundary_conditions_special:
 
-Special Cases
+Special cases
 -------------
 
 .. _boundary_conditions_neknek:
 
-NekNek Coupling
+NekNek coupling
 """""""""""""""
 
-.. note::
+NekNek couples two (or more) Nek instances using an overlapping Schwarz
+approach. Overlapping meshes do not need to be conformal, which simplifies
+meshing and allows flexible placement of resolution as well as distribution of
+computational resources. For example, different instances may use different
+polynomial orders or time step sizes.
 
-   For the ``interpolation`` boundary condition (used in NekNek case) the relevant ``bcData`` variables must be assigned to the field variables, as shown:
+Behind the scenes, NekNek is implemented as a Dirichlet boundary condition for
+velocity and scalar fields. Solution values are interpolated from other sessions
+and applied as boundary values through an outer predictor-corrector loop. Users
+only need to set the ``interpolation`` boundary condition to enable this
+mechanism, and then assign the interpolated values in ``udfDirichlet`` as shown
+below:
 
-   .. code-block:: c++
+.. code-block:: c++
 
-      void udfDirichlet(bcData * bc)
-      {
-        if(isField("fluid velocity")) {
-          bc->uxFluid = bc->uxFluidInt;
-          bc->uyFluid = bc->uyFluidInt;
-          bc->uzFluid = bc->uzFluidInt;
-      }
-        else if (isField("scalar foo")) {
-          bc->sScalar = bc->sScalarInt;
-        }
-      }
+   void udfDirichlet(bcData * bc)
+   {
+     if (isField("fluid velocity")) {
+       bc->uxFluid = bc->uxFluidInt;
+       bc->uyFluid = bc->uyFluidInt;
+       bc->uzFluid = bc->uzFluidInt;
+     } else if (isField("scalar foo")) {
+       bc->sScalar = bc->sScalarInt;
+     }
+   }
+
+With careful planning, this coupling can also be made one directional, for
+example to generate a turbulent inlet using a smaller upstream domain.
+
 
 .. _boundary_conditions_turbinflow:
 
-Turbulent Inflow
+Turbulent inflow
 """"""""""""""""
 
-(for LES/DNS)
-random perturbed (tripping)
+A simple way to trip turbulence for an initial condition or inflow boundary is
+to add a small, reproducible random perturbation. *NekRS* provides a helper in
+``platform/utils/randomVector.hpp``:
+
+.. code-block:: c++
+
+   template <typename T>
+   std::vector<T> randomVector(int N,
+                               T min = 0,
+                               T max = 1,
+                               bool deterministic = false);
+
+For example, the following generates a deterministic uniform random vector in
+:math:`[-1, 1]`:.  A complete working example can be found in
+``turbPipePeriodic``.
+
+.. code-block:: c++
+
+   auto rand = randomVector<dfloat>(mesh->Nlocal, -1.0, 1.0, true);
+
+   std::vector<dfloat> U(mesh->dim * nrs->fluid->fieldOffset, 0.0);
+   for (int n = 0; n < mesh->Nlocal; n++) {
+     const auto R = 0.5;
+     const auto xr = x[n] / R;
+     const auto yr = y[n] / R;
+
+     auto rr = xr * xr + yr * yr;
+     rr = (rr > 0) ? sqrt(rr) : 0.0;
+
+     auto uz = 6/5. * (1 - pow(rr, 6));
+     U[n + 2 * nrs->fluid->fieldOffset] = uz + 0.01 * rand[n];
+   }
+
+    nrs->fluid->o_U.copyFrom(U.data(), U.size());
+
+The generated random values can be used as a tripping signal by scaling and
+adding them to the inlet velocity profile or to the initial condition.
+
 
 .. _boundary_conditions_recycling:
 
-Velocity Recycling
+Velocity recycling
 """"""""""""""""""
 
 NekRS offers an in-built technique to impose fully developed turbulent inflow conditions.
@@ -389,7 +470,7 @@ It comprises recycling the velocity from an offset surface in the domain interio
 The required routines are available through the ``planarCopy.hpp`` header file.
 Sample ``.udf`` code to use velocity recycling is as follows,
 
-.. code-block::
+.. code-block:: cpp
 
   #include "planarCopy.hpp"
 
@@ -460,7 +541,7 @@ The recycling surface is located at an offset distance equal to :math:`20 Dh` fr
   The recommended recycling length is :math:`8-10 Dh` [Lund1998]_ to allow the resolution of largest eddies. The user must ensure that the boundary layer is not acted upon by significant pressure gradients or geometrical changes between the inlet and recycle plane.
 
 The interpolated velocities from the recycling surface are stored in the ``o_usrwrk`` array which is accessible in the ``udfDirichlet`` kernel.
-Therefore, ``o_usrwrk`` vector must be resized to accomodate the velocity data to ``mesh->dim * nrs->fluid->fieldOffset`` length.
+Therefore, ``o_usrwrk`` vector must be resized to accommodate the velocity data to ``mesh->dim * nrs->fluid->fieldOffset`` length.
 The ``planarCopy()`` call setups up the necessary interpolation procedures to map the velocity from domain interior to the inlet surface.
 Note the parameters passed as arguments to the setup routine.
 The ``execute()`` routine is called from the ``UDF_ExecuteStep`` routine at every time step.
@@ -470,7 +551,25 @@ Note the proper indexing and offset specified using ``bc->idxVol`` and ``bc->fie
 
 .. _boundary_conditions_dong_outflow:
 
-Stabilized (Dong) Outflow
-"""""""""""""""""""""""""""""""""""""""""""""""
+Stabilized outflow [Dong]
+"""""""""""""""""""""""""
 
-*TODO*
+One way to mitigate numerical instabilities caused by backflow at outflow
+boundaries, for example due to large vortical structures, is to apply a
+stabilized outflow boundary condition such as that proposed in [Dong2014]_.
+This approach introduces a pressure correction that locally damps backflow by
+penalizing negative normal velocity.
+
+An example implementation is shown below:
+
+.. code-block:: cpp
+
+   void udfDirichlet(bcData *bc)
+   {
+     if (isField("fluid pressure")) {
+       const dfloat iU0delta = 20.0;
+       const dfloat un = bc->uxFluid * bc->nx + bc->uyFluid * bc->ny + bc->uzFluid * bc->nz;
+       const dfloat s0 = 0.5 * (1.0 - tanh(un * iU0delta));
+       bc->pFluid = -0.5 * (bc->uxFluid * bc->uxFluid + bc->uyFluid * bc->uyFluid + bc->uzFluid * bc->uzFluid) * s0;
+     }
+   }
