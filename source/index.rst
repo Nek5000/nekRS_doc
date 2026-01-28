@@ -17,7 +17,7 @@ At the very least, please read :ref:`case` page for a description of *nekRS* cas
 
 .. note::
 
-   The instructions in this documentation are specific to `v25.x <https://github.com/Nek5000/nekRS/tree/next>`_.
+   The instructions in this documentation are specific to `v26.x <https://github.com/Nek5000/nekRS/tree/master>`_.
    The documentation does not currently support earlier versions of *nekRS*.
 
 .. note::

@@ -64,9 +64,9 @@ Acquiring the Code
 .. code-block:: bash
 
     cd ~
-    wget https://github.com/Nek5000/nekRS/archive/refs/tags/v25.0-rc1.tar.gz
-    tar -xzvf v25.0-rc1.tar.gz
-    mv nekRS-25.0-rc1 nekRS
+    wget https://github.com/Nek5000/nekRS/archive/refs/tags/v26.0.tar.gz
+    tar -xzvf v26.0.tar.gz
+    mv nekRS-26.0 nekRS
     cd nekRS
 
 or by cloning the GitHub repository:
