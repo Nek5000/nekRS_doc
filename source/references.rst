@@ -43,3 +43,8 @@ References
 
 
 .. [Hunt1988] Hunt, Julian CR, Alan A. Wray, and Parviz Moin. "Eddies, streams, and convergence zones in turbulent flows." *Studying turbulence using numerical simulation databases, 2. Proceedings of the 1988 summer program* (1988)
+
+.. [Dong2014] Dong, S., Karniadakis, G. E., and Chryssostomidis, C.,
+   "A robust and accurate outflow boundary condition for incompressible flow
+   simulations on severely truncated unbounded domains",
+   *Journal of Computational Physics* (2014)

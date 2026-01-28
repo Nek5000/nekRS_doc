@@ -45,7 +45,8 @@ rst_prolog = """
 extensions = ["sphinx.ext.mathjax", 
               "sphinx.ext.githubpages", 
               "sphinx_mdinclude",
-              "sphinx_tabs.tabs"]
+              "sphinx_tabs.tabs",
+              "sphinx_design"] # dropdown
 
 # Suppress Pygments “highlighting failure” warnings
 suppress_warnings = ['misc.highlighting_failure']

@@ -454,9 +454,9 @@ Various operations are performed within this routine, including, but not limited
 * Register function pointers for user-defined source terms (see :ref:`source_terms`).
 * Initialize and set up RANS turbulence models (see :ref:`ktau_model`)
 * Initialize and set up the Low-Mach compressible model (see :ref:`lowmach_model`)
-* Initialize solution recycling routines and arrays (see :ref:`recycling`)
+* Initialize solution recycling routines and arrays (see :ref:`boundary_conditions_recycling`)
 * Allocate ``bc->o_usrwrk`` for user-defined boundary data (see *TODO*)
-* Initialize time-averaging routines and buffers (see *TODO*)
+* Initialize time-averaging routines and buffers (see :ref:`postproc_averaging_tavg`)
 
 
 UDF_ExecuteStep
@@ -467,12 +467,12 @@ It is called once just before time marching begins, and then once **per time ste
 The routine receives the current time (``double t``) and the step index (``int tstep``).
 Typical operations include:
 
-* Run time-averaging updates (see *TODO*)
-* Invoke solution recycling logic (see :ref:`recycling`).
+* Run time-averaging updates (see :ref:`postproc_averaging_tavg`)
+* Invoke solution recycling logic (see :ref:`boundary_conditions_recycling`).
 * Post-processing tasks, such as:
 
   * Extracting data over a line (see :ref:`extract_line`).
-  * Writing custom field files (*TODO*).
+  * Writing custom field files (see :ref:`postproc_checkpoint_custom_file`).
 
 
 .. _usr_file:
