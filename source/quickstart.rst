@@ -76,15 +76,15 @@ or by cloning the GitHub repository:
    cd ~
    git clone https://github.com/Nek5000/nekRS.git
    cd nekRS
-   git checkout next
 
 .. note::
 
-   The latest development version of *NekRS* is maintained on the ``next``
-   branch of the GitHub repository. Make sure you have checked out ``next`` (as
-   shown above) and verify that your local HEAD matches the latest commit listed at
+   The ``master`` branch provides the latest **stable** release of *NekRS*.
+   The ``next`` branch is used for **development and release candidates (RCs)**.
+   To access new features, check out ``next`` and use ``git log`` to verify that
+   your local ``HEAD`` matches the latest commit listed at
    `NekRS next branch commits <https://github.com/Nek5000/nekRS/commits/next/>`__.
-   You can inspect your local HEAD with ``git log``.
+
 
 Building NekRS
 ^^^^^^^^^^^^^^
