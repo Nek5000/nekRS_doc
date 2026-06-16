@@ -98,7 +98,7 @@ Diffusion and Source terms
 
 .. literalinclude:: ktauTutorial/channel.udf
    :language: c++
-   :lines: 72-80
+   :lines: 72-82
 
 *NekRS* provides convenient routines, available in the namespace ``RANSktau``, for spatially varying diffusion and source terms, as shown above.
 Details on the diffusion and source terms can be found in :ref:`RANS theory <rans_models>`.
