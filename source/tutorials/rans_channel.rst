@@ -86,7 +86,7 @@ For this case the ``UDF_Setup`` setup is as follows,
 
 .. literalinclude:: ktauTutorial/channel.udf
    :language: c++
-   :lines: 93-132
+   :lines: 94-134
 	
 Several operations are performed in the code snippet above.
 
@@ -98,7 +98,7 @@ Diffusion and Source terms
 
 .. literalinclude:: ktauTutorial/channel.udf
    :language: c++
-   :lines: 72-82
+   :lines: 73-82
 
 *NekRS* provides convenient routines, available in the namespace ``RANSktau``, for spatially varying diffusion and source terms, as shown above.
 Details on the diffusion and source terms can be found in :ref:`RANS theory <rans_models>`.
